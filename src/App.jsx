@@ -37,19 +37,19 @@ export default function App() {
 
   return (
     <div className="bg-pc-bg h-screen w-screen flex flex-col items-center justify-center">
-      <h1 className="text-pc-blue font-font-gilroy-bold text-[37.43px]">
+      <h1 className="text-pc-blue font-font-gilroy-bold text-[30px] md:text-[37.43px] mt-10 md:mt-0">
         Fill the form below
       </h1>
       <form
         action=""
-        className="w-[50%] font-font-gilroy-regular mt-8 flex flex-col items-center space-y-6"
+        className="w-full md:w-[50%] text-small-text md:text-normal-text px-[25px] md:px-0 font-font-gilroy-regular mt-8 flex flex-col items-center space-y-6"
       >
         <div className="flex flex-col items-start justify-center w-full space-y-2">
           <label htmlFor="name">Full Name</label>
           <input
             type="text"
             placeholder="Enter Full Name"
-            className="w-full py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
+            className="w-full py-2 md:py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
           />
         </div>
         <div className="flex flex-col items-start justify-center w-full space-y-2">
@@ -57,7 +57,7 @@ export default function App() {
           <input
             type="text"
             placeholder="Enter Email"
-            className="w-full py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
+            className="w-full py-2 md:py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
           />
         </div>
         <div className="flex flex-col items-start justify-center w-full space-y-2">
@@ -65,10 +65,10 @@ export default function App() {
           <input
             type="tel"
             placeholder="Enter Phone Number"
-            className="w-full py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
+            className="w-full py-2 md:py-3 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg focus:border-[2px] outline-none transition-all duration-150 ease-linear"
           />
         </div>
-        <div className="flex flex-col items-start justify-center w-full space-y-2">
+        <div className="flex flex-col items-start justify-center w-full space-y-2 pb-5">
           <label htmlFor="course-of-interest">Course Of Interest</label>
           <div className="relative w-full">
             <select
@@ -76,7 +76,7 @@ export default function App() {
               id=""
               value={selectedCourseId || ""}
               onChange={handleCourseChange}
-              className="w-full py-4 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg font-font-gilroy-regular appearance-none focus:outline-none cursor-pointer"
+              className="w-full py-2 md:py-4 px-7 bg-pc-bg border border-pc-dark-gray/35 rounded-lg font-font-gilroy-regular appearance-none focus:outline-none cursor-pointer"
             >
               <option value="Select Your Course Of Interest" disabled>
                 Select Your Course Of Interest
@@ -112,7 +112,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <button className="bg-pc-orange text-white py-4 px-7 w-[70%]">
+        <button className="bg-pc-orange text-white py-2 md:py-4 px-7 w-full md:w-[70%]">
           Proceed To Quiz
         </button>
       </form>
