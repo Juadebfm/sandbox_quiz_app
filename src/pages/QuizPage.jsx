@@ -121,8 +121,8 @@ const QuizPage = () => {
   }, [questions, selectedAnswers]);
 
   return (
-    <div className="bg-pc-bg h-max w-screen flex flex-col items-start justify-center px-16 font-font-gilroy-regular overflow-x-hidden">
-      <div className="w-[60%] m-auto mt-10">
+    <div className="bg-pc-bg h-max w-screen flex flex-col items-start justify-center px-[25px] md:px-16 font-font-gilroy-regular overflow-x-hidden">
+      <div className="w-full md:w-[60%] m-auto mt-10">
         <h1 className="text-pc-blue font-font-gilroy-bold text-[30px] md:text-[37.43px] mt-10 md:mt-0">
           Quiz
         </h1>
@@ -135,7 +135,7 @@ const QuizPage = () => {
               <p className="font-font-gilroy-bold text-[18px]">
                 {question.number}. {question.question}
               </p>
-              <ul className="space-y-2 pl-4">
+              <ul className="space-y-2 pl-4 text-base md:text-normal-text">
                 {question.answers.map((answer, answerIndex) => (
                   <li key={answerIndex}>
                     <input
@@ -179,7 +179,7 @@ const QuizPage = () => {
           {!viewingResult ? (
             <button
               onClick={calculateScore}
-              className={`py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-[40%] my-6 mx-auto ${
+              className={`py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-full md:w-[40%] my-6 mx-auto ${
                 isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={isSubmitDisabled}
@@ -189,7 +189,7 @@ const QuizPage = () => {
           ) : (
             <button
               onClick={() => navigate("/status")}
-              className="py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-[40%] my-6 mx-auto"
+              className="py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-full md:w-[40%] my-6 mx-auto"
             >
               Go to Scores
             </button>
