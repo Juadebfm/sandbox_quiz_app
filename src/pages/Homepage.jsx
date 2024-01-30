@@ -74,39 +74,37 @@ const Homepage = () => {
     } else {
       // Proceed to the quiz
       console.log("Proceeding to the quiz!");
-      // You can add logic here to navigate to the quiz page or perform other actions
-      if (errorMessages.length > 0) {
-        console.log(`${errorMessages.join(", ")} is required.`);
-      } else {
-        // Proceed to the quiz
-        console.log("Proceeding to the quiz!");
 
-        // Save user information in local storage
-        const userInfo = {
-          name: fullName,
-          email: email,
-          phone_number: phone,
-          course_id: selectedCourseId,
-        };
-        const stringifyUserInfo = JSON.stringify(userInfo);
-        localStorage.setItem("UserInfo", stringifyUserInfo);
+      // Save user information in local storage
+      const userInfo = {
+        name: fullName,
+        email: email,
+        phone_number: phone,
+        course_id: selectedCourseId,
+      };
+      const stringifyUserInfo = JSON.stringify(userInfo);
+      localStorage.setItem("UserInfo", stringifyUserInfo);
 
-        // Make API call with selectedCourseId
-        const apiUrl = `https://backend.pluralcode.institute/student/get-quiz?course_id=${selectedCourseId}`;
+      const userIpAddress = localStorage.getItem("IP");
 
-        fetch(apiUrl, { method: "GET", redirect: "follow" })
-          .then((response) => response.json())
-          .then((result) => {
-            console.log(result);
-            const stringifyResult = JSON.stringify(result);
-            localStorage.setItem("Result", stringifyResult);
-            // Navigate to the quiz page
-            navigate("/quiz");
-          })
-          .catch((error) => console.log("error", error));
-      }
+      // Check if the user already has quiz information
+      const apiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${userIpAddress}&email=${email}`;
+
+      fetch(apiUrl, { method: "GET", redirect: "follow" })
+        .then((response) => response.text())
+        .then((result) => {
+          console.log(result);
+
+          // If the user has quiz information, navigate to the quiz page
+          // Otherwise, navigate to the status page
+          const isExistingUser = result === "existing_user";
+          const pathToNavigate = isExistingUser ? "/quiz" : "/status";
+          navigate(pathToNavigate);
+        })
+        .catch((error) => console.log("error", error));
     }
   };
+
   return (
     <div className="bg-pc-bg h-screen w-screen flex flex-col items-center justify-center">
       <h1 className="text-pc-blue font-font-gilroy-bold text-[30px] md:text-[37.43px] mt-10 md:mt-0">
