@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const QuizPage = () => {
   const [questions, setQuestions] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [viewingResult, setViewingResult] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const storedResult = localStorage.getItem("Result");
@@ -24,25 +25,28 @@ const QuizPage = () => {
   }, []);
 
   useEffect(() => {
-    const isViewingResult = localStorage.getItem("viewingResult");
+    // Check if there's bodyData in local storage
+    const bodyData = JSON.parse(localStorage.getItem("bodyData"));
 
-    if (isViewingResult === "true") {
-      // Highlight answers when viewing results
-      const highlightAnswers = location.state?.highlightAnswers;
-      setSelectedAnswers(
-        highlightAnswers.reduce(
-          (acc, question) => ({
-            ...acc,
-            [question.number]: question.answer[0],
-          }),
-          {}
-        )
-      );
+    // Check if viewingResult flag is true and bodyData is available
+    const viewingResultFlag = localStorage.getItem("viewingResult") === "true";
+    setViewingResult(viewingResultFlag);
 
-      // Remove the flag from local storage
-      localStorage.removeItem("viewingResult");
+    if (viewingResultFlag && bodyData) {
+      // Highlight the user's options based on bodyData
+      const updatedSelectedAnswers = {};
+      questions.forEach((question) => {
+        const questionNumber = question.number;
+        const userAnswer = bodyData.quiz_attempt.questions.find(
+          (q) => q.question === question.question
+        )?.answer[0];
+
+        updatedSelectedAnswers[questionNumber] = userAnswer;
+      });
+
+      setSelectedAnswers(updatedSelectedAnswers);
     }
-  }, [location.state]);
+  }, [questions]);
 
   const handleOptionSelect = (questionNumber, selectedOption) => {
     setSelectedAnswers((prevAnswers) => ({
@@ -66,9 +70,7 @@ const QuizPage = () => {
 
     const totalQuestions = questions.length;
     const score = (correctCount / totalQuestions) * 100;
-
     const roundedScore = Math.ceil(score / 10) * 10;
-
     const status = roundedScore >= 70 ? "Passed" : "Failed";
 
     const storedUserData = localStorage.getItem("UserInfo");
@@ -77,6 +79,7 @@ const QuizPage = () => {
 
     if (storedUserData && storedQuizResult) {
       const userData = JSON.parse(storedUserData);
+      const quizResult = JSON.parse(storedQuizResult);
 
       const bodyData = {
         name: userData.name,
@@ -103,11 +106,19 @@ const QuizPage = () => {
       const stringifyBodyData = JSON.stringify(bodyData);
       localStorage.setItem("bodyData", stringifyBodyData);
 
-      console.log("Stored bodyData in local storage:", bodyData);
-
       navigate("/status");
     }
   };
+
+  useEffect(() => {
+    // Check if all questions have been answered
+    const allQuestionsAnswered = questions.every(
+      (question) => selectedAnswers[question.number] !== undefined
+    );
+
+    // Update the submit button disabled state
+    setIsSubmitDisabled(!allQuestionsAnswered);
+  }, [questions, selectedAnswers]);
 
   return (
     <div className="bg-pc-bg h-max w-screen flex flex-col items-start justify-center px-16 font-font-gilroy-regular overflow-x-hidden">
@@ -138,7 +149,26 @@ const QuizPage = () => {
                       }
                       className="mr-1 cursor-pointer"
                     />
-                    <label htmlFor={`q${question.number}-a${answerIndex}`}>
+                    <label
+                      htmlFor={`q${question.number}-a${answerIndex}`}
+                      className={`${
+                        selectedAnswers[question.number] === answer
+                          ? "font-bold "
+                          : ""
+                      } ${
+                        selectedAnswers[question.number] === answer &&
+                        selectedAnswers[question.number] !==
+                          question.correct_answers[0]
+                          ? "text-red-500"
+                          : ""
+                      } ${
+                        selectedAnswers[question.number] === answer &&
+                        selectedAnswers[question.number] ===
+                          question.correct_answers[0]
+                          ? "text-green-500"
+                          : ""
+                      }`}
+                    >
                       {answer}
                     </label>
                   </li>
@@ -146,12 +176,24 @@ const QuizPage = () => {
               </ul>
             </div>
           ))}
-          <button
-            onClick={calculateScore}
-            className="py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-[40%] my-6 mx-auto"
-          >
-            Submit
-          </button>
+          {!viewingResult ? (
+            <button
+              onClick={calculateScore}
+              className={`py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-[40%] my-6 mx-auto ${
+                isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={isSubmitDisabled}
+            >
+              Submit
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/status")}
+              className="py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-[40%] my-6 mx-auto"
+            >
+              Go to Scores
+            </button>
+          )}
         </div>
       </div>
     </div>

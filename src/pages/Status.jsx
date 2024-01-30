@@ -46,16 +46,16 @@ const Status = () => {
   };
 
   return (
-    <div className="px-16 flex flex-col items-center justify-center h-screen w-screen overflow-x-hidden">
+    <div className="px-[25px] md:px-16 pt-16 md:pt-0 flex flex-col items-center justify-center h-screen w-screen overflow-x-hidden">
       {bodyData && (
         <div className="w-full">
-          <h1 className="text-[40px] font-font-gilroy-bold text-pc-blue">
+          <h1 className="text-[30px] md:text-[40px] leading-[1] text-center md:text-start font-font-gilroy-bold text-pc-blue">
             {bodyData.status.toLowerCase() === "passed"
               ? "Congratulations! You Passed!"
               : "Sorry, You Failed."}
           </h1>
 
-          <p className="font-font-gilroy-bold text-pc-dark-gray text-[25px]">
+          <p className="font-font-gilroy-bold text-pc-dark-gray text-[20px] md:text-[25px] text-center md:text-start mt-6 md:mt-0">
             Score:{" "}
             <span
               className="ml-1 font-font-gilroy-bold"
@@ -69,31 +69,31 @@ const Status = () => {
           </p>
 
           <div className="timer"></div>
-          <div className="flex items-center justify-between mt-10 gap-6 font-font-gilroy-regular font-bold w-full py-7 border-b border-pc-light-gray">
+          <div className="w-full flex flex-col md:flex-row items-center justify-between mt-10 gap-6 font-font-gilroy-regular font-bold py-7 border-b border-pc-light-gray">
             <span className="flex items-center justify-center gap-3 text-[17px]">
               <IoCheckmarkCircle className="text-[#008000] text-[25px]" />
               <span>Your Quiz Has Been Submitted</span>
             </span>
-            <div className="space-x-6">
+            <div className="space-x-0 md:space-x-6 space-y-6 md:space-y-0">
               <button
                 onClick={handleViewResultClick}
-                className="py-2 md:py-3 px-7 bg-[#CCCCCC] rounded-md font-normal w-[200px] h-[51px]"
+                className="py-2 md:py-3 px-7 bg-[#CCCCCC] rounded-md font-normal w-full md:w-[200px] h-[51px]"
               >
                 View Result
               </button>
-              <button className="py-2 md:py-3 px-7 bg-pc-orange font-normal rounded-md w-[200px] h-[51px]">
+              <button className="py-2 md:py-3 px-7 bg-pc-orange font-normal rounded-md w-full md:w-[200px] h-[51px]">
                 Try Again
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between mt-10 gap-6 font-font-gilroy-regular font-bold w-full py-7 border-b border-pc-light-gray">
+          <div className="flex flex-col md:flex-row items-center justify-between mt-10 gap-6 font-font-gilroy-regular font-bold w-full py-7 border-b border-pc-light-gray">
             <span className="flex items-center justify-center gap-3 text-[17px]">
               <IoIosInformationCircle className="text-[#008000] text-[25px]" />
               <span>Passing Grade: 70% or higher</span>
             </span>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-[12px]">Your Grade</span>
-              <span className="text-[25px] text-[#008000]">
+              <span className="text-[16px] md:text-[12px]">Your Grade</span>
+              <span className="text-[35px] md:text-[25px] text-[#008000]">
                 {bodyData.score}%
               </span>
             </div>
