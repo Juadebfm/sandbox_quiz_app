@@ -30,3 +30,7 @@
   font-family: "Gilroy_Black";
   src: url(./assets/fonts/Gilroy-Black.ttf);
 }
+
+body {
+  overflow-x: hidden;
+}

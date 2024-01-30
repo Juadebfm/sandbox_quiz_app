@@ -81,13 +81,25 @@ const Homepage = () => {
         // Proceed to the quiz
         console.log("Proceeding to the quiz!");
 
+        // Save user information in local storage
+        const userInfo = {
+          name: fullName,
+          email: email,
+          phone_number: phone,
+          course_id: selectedCourseId,
+        };
+        const stringifyUserInfo = JSON.stringify(userInfo);
+        localStorage.setItem("UserInfo", stringifyUserInfo);
+
         // Make API call with selectedCourseId
         const apiUrl = `https://backend.pluralcode.institute/student/get-quiz?course_id=${selectedCourseId}`;
 
         fetch(apiUrl, { method: "GET", redirect: "follow" })
-          .then((response) => response.text())
+          .then((response) => response.json())
           .then((result) => {
             console.log(result);
+            const stringifyResult = JSON.stringify(result);
+            localStorage.setItem("Result", stringifyResult);
             // Navigate to the quiz page
             navigate("/quiz");
           })
