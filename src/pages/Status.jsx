@@ -7,7 +7,8 @@ const Status = () => {
   const navigate = useNavigate();
 
   // Retrieve bodyData from local storage
-  const bodyData = JSON.parse(localStorage.getItem("bodyData"));
+  const bodyData = JSON.parse(localStorage.getItem("QuizSubmissionData"));
+  console.log(bodyData)
 
   useEffect(() => {
     if (bodyData) {

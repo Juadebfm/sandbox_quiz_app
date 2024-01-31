@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 
 const QuizPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [isRetakeQuiz, setIsRetakeQuiz] = useState(false);
@@ -44,29 +45,31 @@ const QuizPage = () => {
   // Define passing score as a constant
   const passingScore = 70; // Set the passing score to your desired value
 
-  // Function to calculate the user's score
   const calculateScore = () => {
-    let score = 0;
+    let correctAnswers = 0;
 
     // Iterate through each question
     quizQuestions.forEach((question, questionIndex) => {
-      const correctAnswers = question.correct_answers.map((answer) =>
+      const correctAnswerIndices = question.correct_answers.map((answer) =>
         question.answers.indexOf(answer)
       );
 
       // Check if the user's answer is correct
       if (
         selectedAnswers[questionIndex] !== undefined &&
-        correctAnswers.includes(selectedAnswers[questionIndex])
+        correctAnswerIndices.includes(selectedAnswers[questionIndex])
       ) {
-        score += 1;
+        correctAnswers += 1;
       }
     });
 
-    return score;
+    // Calculate the percentage and round it to the nearest whole number
+    const totalQuestions = quizQuestions.length;
+    const userScore = Math.round((correctAnswers / totalQuestions) * 100);
+
+    return userScore;
   };
 
-  // Function to handle the submission of the quiz
   const handleSubmitQuiz = async () => {
     // Calculate the user's score
     const userScore = calculateScore();
@@ -77,7 +80,6 @@ const QuizPage = () => {
     // Extract IP address without quotation marks
     const userIP = localStorage.getItem("IP").replace(/"/g, "");
 
-    // Prepare data to send to the API
     const postData = {
       name: userInfo.name,
       email: userInfo.email,
@@ -92,14 +94,13 @@ const QuizPage = () => {
           question_type: question.question_type,
           answers: question.answers,
           correct_answers: question.correct_answers,
-          answer:
-            selectedAnswers[questionIndex] !== undefined
-              ? [question.answers[selectedAnswers[questionIndex]]]
-              : [], // Include an empty array if the answer is undefined
+          answer: [question.answers[selectedAnswers[questionIndex]]], // Use the selected answer
           failed: [userScore < passingScore],
         })),
       },
     };
+
+    console.log(postData);
 
     // Log the data (you can remove this line in production)
     console.log("Data to send to API:", postData);
@@ -119,6 +120,11 @@ const QuizPage = () => {
 
       if (response.ok) {
         console.log("Data sent successfully!");
+        // Store the postData in local storage
+        localStorage.setItem("QuizSubmissionData", JSON.stringify(postData));
+        setTimeout(() => {
+          navigate("/status");
+        }, 3000);
       } else {
         console.error("Error sending data to API:", response.statusText);
       }

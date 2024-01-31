@@ -63,7 +63,7 @@ const QuizPage = () => {
 
     // Update the submit button disabled state
     setIsSubmitDisabled(!allQuestionsAnswered);
-  };
+  
 
   const highlightUserSelections = () => {
     // Retrieve bodyData from local storage
