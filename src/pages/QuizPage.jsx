@@ -13,6 +13,17 @@ const QuizPage = () => {
     fetchQuizData();
   }, []);
 
+  useEffect(() => {
+    // Check if viewResult=true in the URL
+    const queryParams = new URLSearchParams(location.search);
+    const viewResultParam = queryParams.get("viewResult");
+
+    if (viewResultParam && viewResultParam.toLowerCase() === "true") {
+      // If viewResult=true, highlight user selections
+      highlightUserSelections();
+    }
+  }, [location.search]);
+
   const fetchQuizData = () => {
     // Retrieve user information from local storage
     const storedUserData = localStorage.getItem("UserInfo");
@@ -30,6 +41,12 @@ const QuizPage = () => {
           // Check if the API response contains the 'questions' array
           if (result && result.message && result.message.questions) {
             setQuestions(result.message.questions);
+            // If viewResult=true, highlight user selections
+            const queryParams = new URLSearchParams(location.search);
+            const viewResultParam = queryParams.get("viewResult");
+            if (viewResultParam && viewResultParam.toLowerCase() === "true") {
+              highlightUserSelections();
+            }
           } else {
             console.error("Invalid API response format");
           }
@@ -39,16 +56,10 @@ const QuizPage = () => {
   };
 
   const handleOptionSelect = (questionIndex, optionIndex) => {
-    const selectedOption = questions[questionIndex].answers[optionIndex];
-    const correctOption = questions[questionIndex].correct_answers[0];
-
-    console.log(`Question ${questionIndex + 1}:`);
-    console.log("Selected Option:", selectedOption);
-    console.log("Correct Option:", correctOption);
-
     // Update userAnswers array with the selected option
     const updatedUserAnswers = [...userAnswers];
-    updatedUserAnswers[questionIndex] = selectedOption;
+    updatedUserAnswers[questionIndex] =
+      questions[questionIndex].answers[optionIndex];
     setUserAnswers(updatedUserAnswers);
 
     // Update the selectedOption in the questions array to reflect the UI
@@ -63,6 +74,31 @@ const QuizPage = () => {
 
     // Update the submit button disabled state
     setIsSubmitDisabled(!allQuestionsAnswered);
+  };
+
+  const highlightUserSelections = () => {
+    // Retrieve bodyData from local storage
+    const bodyData = JSON.parse(localStorage.getItem("bodyData"));
+
+    if (bodyData) {
+      // Highlight user selections based on bodyData
+      const updatedQuestions = questions.map((question, questionIndex) => {
+        const userAnswer =
+          bodyData.quiz_attempt.questions[questionIndex].answer[0];
+        const correctAnswer = question.correct_answers[0];
+        const isCorrect = userAnswer === correctAnswer;
+
+        return {
+          ...question,
+          selectedOption: question.answers.findIndex(
+            (answer) => answer === userAnswer
+          ),
+          isCorrect,
+        };
+      });
+
+      setQuestions(updatedQuestions);
+    }
   };
 
   // Function to calculate user's score
@@ -137,34 +173,42 @@ const QuizPage = () => {
       <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
         Answer All Questions
       </h1>
-      {questions.map((question, questionIndex) => (
-        <div key={questionIndex} className="mb-4">
-          <p className="font-bold mb-2 capitalize text-[18px]">{`${
-            questionIndex + 1
-          }. ${question.question}`}</p>
-          <ol type="A" className="space-y-2 pl-4">
-            {question.answers.map((answer, optionIndex) => (
-              <li key={optionIndex} className="py-1">
-                <input
-                  type="radio"
-                  id={`q${questionIndex + 1}-a${optionIndex}`}
-                  name={`q${questionIndex + 1}`}
-                  checked={question.selectedOption === optionIndex}
-                  onChange={() =>
-                    handleOptionSelect(questionIndex, optionIndex)
-                  }
-                />
-                <label
-                  className="pl-2 cursor-pointer"
-                  htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
-                >
-                  {answer}
-                </label>
-              </li>
-            ))}
-          </ol>
-        </div>
+{questions.map((question, questionIndex) => (
+  <div key={questionIndex} className="mb-4">
+    <p className="font-bold mb-2 capitalize text-[18px]">{`${
+      questionIndex + 1
+    }. ${question.question}`}</p>
+    <ol type="A" className="space-y-2 pl-4">
+      {question.answers.map((answer, optionIndex) => (
+        <li
+          key={optionIndex}
+          className={`py-1 ${
+            question.isCorrect !== undefined && optionIndex === question.selectedOption
+              ? question.isCorrect
+                ? 'text-[#008000]' // Green for correct answer
+                : 'text-[#FF0000]' // Red for incorrect answer
+              : ''
+          }`}
+        >
+          <input
+            type="radio"
+            id={`q${questionIndex + 1}-a${optionIndex}`}
+            name={`q${questionIndex + 1}`}
+            checked={question.selectedOption === optionIndex}
+            onChange={() => handleOptionSelect(questionIndex, optionIndex)}
+          />
+          <label
+            className="pl-2 cursor-pointer"
+            htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
+          >
+            {answer}
+          </label>
+        </li>
       ))}
+    </ol>
+  </div>
+))}
+
       <div className="w-full flex items-center justify-center">
         <button
           className={`py-2 md:py-3 px-7 ${

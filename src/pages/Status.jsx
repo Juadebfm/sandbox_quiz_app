@@ -38,11 +38,8 @@ const Status = () => {
   }, []); // Empty dependency array to ensure the effect runs only once on mount
 
   const handleViewResultClick = () => {
-    // Set a flag in local storage to indicate the user is viewing the result
-    localStorage.setItem("viewingResult", "true");
-
-    // Navigate to the QuizPage
-    navigate("/quiz");
+    // Navigate to the QuizPage with the viewResult query parameter
+    navigate(`/quiz?viewResult=true`);
   };
 
   return (
