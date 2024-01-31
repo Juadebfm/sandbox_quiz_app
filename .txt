@@ -2,199 +2,217 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const QuizPage = () => {
-  const [questions, setQuestions] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
-  const [viewingResult, setViewingResult] = useState(false);
   const navigate = useNavigate();
+  // State to store the quiz questions
+  const [questions, setQuestions] = useState([]);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [userAnswers, setUserAnswers] = useState([]);
 
   useEffect(() => {
-    const storedResult = localStorage.getItem("Result");
-
-    if (storedResult) {
-      const result = JSON.parse(storedResult);
-
-      if (result && result.message && result.message.questions) {
-        const questionsWithNumber = result.message.questions.map(
-          (question, index) => ({ ...question, number: index + 1 })
-        );
-
-        setQuestions(questionsWithNumber);
-      }
-    }
+    // Fetch quiz data when the component mounts
+    fetchQuizData();
   }, []);
 
-  useEffect(() => {
-    // Check if there's bodyData in local storage
-    const bodyData = JSON.parse(localStorage.getItem("bodyData"));
-
-    // Check if viewingResult flag is true and bodyData is available
-    const viewingResultFlag = localStorage.getItem("viewingResult") === "true";
-    setViewingResult(viewingResultFlag);
-
-    if (viewingResultFlag && bodyData) {
-      // Highlight the user's options based on bodyData
-      const updatedSelectedAnswers = {};
-      questions.forEach((question) => {
-        const questionNumber = question.number;
-        const userAnswer = bodyData.quiz_attempt.questions.find(
-          (q) => q.question === question.question
-        )?.answer[0];
-
-        updatedSelectedAnswers[questionNumber] = userAnswer;
-      });
-
-      setSelectedAnswers(updatedSelectedAnswers);
-    }
-  }, [questions]);
-
-  const handleOptionSelect = (questionNumber, selectedOption) => {
-    setSelectedAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionNumber]: selectedOption,
-    }));
-  };
-
-  const calculateScore = () => {
-    let correctCount = 0;
-
-    questions.forEach((question) => {
-      const questionNumber = question.number;
-      const selectedOption = selectedAnswers[questionNumber];
-      const correctAnswer = question.correct_answers[0];
-
-      if (selectedOption === correctAnswer) {
-        correctCount++;
-      }
-    });
-
-    const totalQuestions = questions.length;
-    const score = (correctCount / totalQuestions) * 100;
-    const roundedScore = Math.ceil(score / 10) * 10;
-    const status = roundedScore >= 70 ? "Passed" : "Failed";
-
+  const fetchQuizData = () => {
+    // Retrieve user information from local storage
     const storedUserData = localStorage.getItem("UserInfo");
-    const storedQuizResult = localStorage.getItem("QuizResult");
-    const storedIP = localStorage.getItem("IP");
 
-    if (storedUserData && storedQuizResult) {
+    if (storedUserData) {
       const userData = JSON.parse(storedUserData);
-      const quizResult = JSON.parse(storedQuizResult);
 
-      const bodyData = {
-        name: userData.name,
-        email: userData.email,
-        phone_number: userData.phone_number,
-        score: roundedScore.toString(),
-        status,
-        course_id: userData.course_id,
-        ip_address: storedIP,
-        quiz_attempt: {
-          questions: questions.map((question) => ({
-            question: question.question,
-            question_type: question.question_type,
-            answers: question.answers,
-            correct_answers: question.correct_answers,
-            answer: [selectedAnswers[question.number]],
-            failed: [
-              selectedAnswers[question.number] !== question.correct_answers[0],
-            ],
-          })),
-        },
-      };
+      // Construct the API URL with the user's course_id
+      const apiUrl = `https://backend.pluralcode.institute/student/get-quiz?course_id=${userData.course_id}`;
 
-      const stringifyBodyData = JSON.stringify(bodyData);
-      localStorage.setItem("bodyData", stringifyBodyData);
-
-      navigate("/status");
+      // Make the API call
+      fetch(apiUrl)
+        .then((response) => response.json())
+        .then((result) => {
+          // Check if the API response contains the 'questions' array
+          if (result && result.message && result.message.questions) {
+            setQuestions(result.message.questions);
+            // If viewResult=true, highlight user selections
+            const queryParams = new URLSearchParams(location.search);
+            const viewResultParam = queryParams.get("viewResult");
+            if (viewResultParam && viewResultParam.toLowerCase() === "true") {
+              highlightUserSelections();
+            }
+          } else {
+            console.error("Invalid API response format");
+          }
+        })
+        .catch((error) => console.error("Error fetching quiz data:", error));
     }
   };
 
-  useEffect(() => {
+  const handleOptionSelect = (questionIndex, optionIndex) => {
+    // Update userAnswers array with the selected option
+    const updatedUserAnswers = [...userAnswers];
+    updatedUserAnswers[questionIndex] =
+      questions[questionIndex].answers[optionIndex];
+    setUserAnswers(updatedUserAnswers);
+
+    // Update the selectedOption in the questions array to reflect the UI
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].selectedOption = optionIndex;
+    setQuestions(updatedQuestions);
+
     // Check if all questions have been answered
-    const allQuestionsAnswered = questions.every(
-      (question) => selectedAnswers[question.number] !== undefined
+    const allQuestionsAnswered = updatedUserAnswers.every(
+      (answer) => answer !== undefined
     );
 
     // Update the submit button disabled state
     setIsSubmitDisabled(!allQuestionsAnswered);
-  }, [questions, selectedAnswers]);
+  };
+
+  const highlightUserSelections = () => {
+    // Retrieve bodyData from local storage
+    const bodyData = JSON.parse(localStorage.getItem("bodyData"));
+
+    if (bodyData) {
+      // Highlight user selections based on bodyData
+      const updatedQuestions = questions.map((question, questionIndex) => {
+        const userAnswer =
+          bodyData.quiz_attempt.questions[questionIndex].answer[0];
+        const correctAnswer = question.correct_answers[0];
+        const isCorrect = userAnswer === correctAnswer;
+
+        return {
+          ...question,
+          selectedOption: question.answers.findIndex(
+            (answer) => answer === userAnswer
+          ),
+          isCorrect,
+        };
+      });
+
+      setQuestions(updatedQuestions);
+    }
+  };
+
+  // Function to calculate user's score
+  const calculateUserScore = () => {
+    let score = 0;
+
+    questions.forEach((question, index) => {
+      const userAnswer = userAnswers[index];
+      const correctAnswer = question.correct_answers[0];
+
+      if (userAnswer === correctAnswer) {
+        score += 1; // Increment score for each correct answer
+      }
+    });
+
+    const percentageScore = (score / questions.length) * 100;
+    const roundedScore = percentageScore.toFixed(0); // Round to 0 decimal places
+
+    return roundedScore;
+  };
+
+  const handleSubmitQuiz = () => {
+    // Calculate and log user's score
+    const userScore = calculateUserScore();
+    console.log("User's Score:", userScore);
+
+    // Create the bodyData object
+    const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
+    const ipAddress = localStorage.getItem("IP");
+
+    const bodyData = {
+      name: userInfo.name,
+      email: userInfo.email,
+      phone_number: userInfo.phone_number,
+      score: userScore,
+      status: userScore >= 70 ? "passed" : "failed", // Adjust the threshold as needed
+      course_id: userInfo.course_id,
+      ip_address: ipAddress,
+      quiz_attempt: {
+        questions: userAnswers.map((answer, index) => {
+          const question = questions[index];
+          const correctAnswer = question.correct_answers[0];
+          const questionData = {
+            question: question.question,
+            question_type: question.question_type,
+            answers: question.answers,
+            correct_answers: question.correct_answers,
+            answer: [answer],
+            failed: [answer !== correctAnswer],
+          };
+          return questionData;
+        }),
+      },
+    };
+
+    // Store bodyData in localStorage
+    localStorage.setItem("bodyData", JSON.stringify(bodyData));
+
+    // Perform any additional actions (e.g., API call) with user's score here
+
+    // Redirect or navigate to the status page
+    setTimeout(() => {
+      navigate("/status");
+    }, 2000);
+  };
 
   return (
-    <div className="bg-pc-bg h-max w-screen flex flex-col items-start justify-center px-[25px] md:px-16 font-font-gilroy-regular overflow-x-hidden">
-      <div className="w-full md:w-[60%] m-auto mt-10">
-        <h1 className="text-pc-blue font-font-gilroy-bold text-[30px] md:text-[37.43px] mt-10 md:mt-0">
-          Quiz
-        </h1>
-        <h2 className="mt-10 text-[24px] font-font-gilroy-bold capitalize text-pc-blue mb-6">
-          Answer the following questions
-        </h2>
-        <div className="w-full flex flex-col">
-          {questions.map((question) => (
-            <div key={question.number} className="my-4">
-              <p className="font-font-gilroy-bold text-[18px]">
-                {question.number}. {question.question}
-              </p>
-              <ul className="space-y-2 pl-4 text-base md:text-normal-text">
-                {question.answers.map((answer, answerIndex) => (
-                  <li key={answerIndex}>
-                    <input
-                      type="radio"
-                      id={`q${question.number}-a${answerIndex}`}
-                      name={`q${question.number}`}
-                      value={answer}
-                      checked={selectedAnswers[question.number] === answer}
-                      onChange={() =>
-                        handleOptionSelect(question.number, answer)
-                      }
-                      className="mr-1 cursor-pointer"
-                    />
-                    <label
-                      htmlFor={`q${question.number}-a${answerIndex}`}
-                      className={`${
-                        selectedAnswers[question.number] === answer
-                          ? "font-bold "
-                          : ""
-                      } ${
-                        selectedAnswers[question.number] === answer &&
-                        selectedAnswers[question.number] !==
-                          question.correct_answers[0]
-                          ? "text-red-500"
-                          : ""
-                      } ${
-                        selectedAnswers[question.number] === answer &&
-                        selectedAnswers[question.number] ===
-                          question.correct_answers[0]
-                          ? "text-green-500"
-                          : ""
-                      }`}
-                    >
-                      {answer}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          {!viewingResult ? (
-            <button
-              onClick={calculateScore}
-              className={`py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-full md:w-[40%] my-6 mx-auto ${
-                isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={isSubmitDisabled}
-            >
-              Submit
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/status")}
-              className="py-2 md:py-3 px-7 bg-pc-blue text-white rounded-md w-full md:w-[40%] my-6 mx-auto"
-            >
-              Go to Scores
-            </button>
-          )}
+    <div className="w-full md:w-[80%] h-max mx-auto p-[25px] md:p-16">
+      <h1 className="text-pc-blue text-[40px] font-bold mb-2 mt-8 md:mt-0">
+        Quiz Page
+      </h1>
+      <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
+        Answer All Questions
+      </h1>
+      {questions.map((question, questionIndex) => (
+        <div key={questionIndex} className="mb-4">
+          <p className="font-bold mb-2 capitalize text-[18px]">{`${
+            questionIndex + 1
+          }. ${question.question}`}</p>
+          <ol type="A" className="space-y-2 pl-4">
+            {question.answers.map((answer, optionIndex) => (
+              <li
+                key={optionIndex}
+                className={`py-1 ${
+                  question.isCorrect !== undefined &&
+                  optionIndex === question.selectedOption
+                    ? question.isCorrect
+                      ? "text-[#008000]" // Green for correct answer
+                      : "text-[#FF0000]" // Red for incorrect answer
+                    : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  id={`q${questionIndex + 1}-a${optionIndex}`}
+                  name={`q${questionIndex + 1}`}
+                  checked={question.selectedOption === optionIndex}
+                  onChange={() =>
+                    handleOptionSelect(questionIndex, optionIndex)
+                  }
+                />
+                <label
+                  className="pl-2 cursor-pointer"
+                  htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
+                >
+                  {answer}
+                </label>
+              </li>
+            ))}
+          </ol>
         </div>
+      ))}
+
+      <div className="w-full flex items-center justify-center">
+        <button
+          className={`py-2 md:py-3 px-7 ${
+            isSubmitDisabled
+              ? "bg-[#CCCCCC] cursor-not-allowed"
+              : "bg-pc-blue text-white cursor-pointer"
+          } rounded-md font-normal w-full md:w-[35%] h-[51px] mt-10`}
+          disabled={isSubmitDisabled}
+          onClick={handleSubmitQuiz}
+        >
+          Submit Quiz
+        </button>
       </div>
     </div>
   );

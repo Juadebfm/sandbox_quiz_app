@@ -1,238 +1,244 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
 
 const QuizPage = () => {
-  const navigate = useNavigate();
-  // State to store the quiz questions
-  const [questions, setQuestions] = useState([]);
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
-  const [userAnswers, setUserAnswers] = useState([]);
+  const location = useLocation();
 
-  useEffect(() => {
-    // Fetch quiz data when the component mounts
-    fetchQuizData();
-  }, []);
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [isRetakeQuiz, setIsRetakeQuiz] = useState(false);
+  // Add a state to track whether the submit button should be enabled
+  const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(true);
+  const [selectedAnswers, setSelectedAnswers] = useState(
+    Array(quizQuestions.length).fill(null)
+  );
 
-  useEffect(() => {
-    // Check if viewResult=true in the URL
-    const queryParams = new URLSearchParams(location.search);
-    const viewResultParam = queryParams.get("viewResult");
-
-    if (viewResultParam && viewResultParam.toLowerCase() === "true") {
-      // If viewResult=true, highlight user selections
-      highlightUserSelections();
-
-      // Set timeout to navigate to home page after 5 minutes
-      const timeoutId = setTimeout(() => {
-        navigate("/"); // Replace "/" with the desired home page URL
-      }, 300000); // 5 minutes in milliseconds
-
-      // Clear the timeout when the component is unmounted
-      return () => clearTimeout(timeoutId);
-    }
-  }, [location.search, navigate]);
-
-  const fetchQuizData = () => {
-    // Retrieve user information from local storage
-    const storedUserData = localStorage.getItem("UserInfo");
-
-    if (storedUserData) {
-      const userData = JSON.parse(storedUserData);
-
-      // Construct the API URL with the user's course_id
-      const apiUrl = `https://backend.pluralcode.institute/student/get-quiz?course_id=${userData.course_id}`;
-
-      // Make the API call
-      fetch(apiUrl)
-        .then((response) => response.json())
-        .then((result) => {
-          // Check if the API response contains the 'questions' array
-          if (result && result.message && result.message.questions) {
-            setQuestions(result.message.questions);
-            // If viewResult=true, highlight user selections
-            const queryParams = new URLSearchParams(location.search);
-            const viewResultParam = queryParams.get("viewResult");
-            if (viewResultParam && viewResultParam.toLowerCase() === "true") {
-              highlightUserSelections();
-            }
-          } else {
-            console.error("Invalid API response format");
-          }
-        })
-        .catch((error) => console.error("Error fetching quiz data:", error));
-    }
+  // Function to get the correct answer for a question
+  const getCorrectAnswer = (questionIndex) => {
+    return quizQuestions[questionIndex].correct_answers;
   };
 
-  const handleOptionSelect = (questionIndex, optionIndex) => {
-    // Update userAnswers array with the selected option
-    const updatedUserAnswers = [...userAnswers];
-    updatedUserAnswers[questionIndex] =
-      questions[questionIndex].answers[optionIndex];
-    setUserAnswers(updatedUserAnswers);
+  // Function to update selected answer for a question
+  const handleSelectAnswer = (questionIndex, optionIndex) => {
+    const updatedAnswers = [...selectedAnswers];
+    updatedAnswers[questionIndex] = optionIndex;
+    setSelectedAnswers(updatedAnswers);
 
-    // Update the selectedOption in the questions array to reflect the UI
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].selectedOption = optionIndex;
-    setQuestions(updatedQuestions);
+    // Log the user's option and the correct answer(s)
+    const userOption = String.fromCharCode(65 + optionIndex);
+    const correctAnswers = getCorrectAnswer(questionIndex);
 
-    // Check if all questions have been answered
-    const allQuestionsAnswered = updatedUserAnswers.every(
-      (answer) => answer !== undefined
+    console.log(`Question ${questionIndex + 1}:`);
+    console.log(
+      `User's Option: ${userOption}, Correct Answer(s): ${correctAnswers.join(
+        ", "
+      )}`
     );
 
-    // Update the submit button disabled state
-    setIsSubmitDisabled(!allQuestionsAnswered);
+    // Check if all questions are answered
+    const allQuestionsAnswered = updatedAnswers.every(
+      (answerIndex) => answerIndex !== null
+    );
+    setIsSubmitButtonDisabled(!allQuestionsAnswered);
   };
 
-  const highlightUserSelections = () => {
-    // Retrieve bodyData from local storage
-    const bodyData = JSON.parse(localStorage.getItem("bodyData"));
+  // Define passing score as a constant
+  const passingScore = 70; // Set the passing score to your desired value
 
-    if (bodyData) {
-      // Highlight user selections based on bodyData
-      const updatedQuestions = questions.map((question, questionIndex) => {
-        const userAnswer =
-          bodyData.quiz_attempt.questions[questionIndex].answer[0];
-        const correctAnswer = question.correct_answers[0];
-        const isCorrect = userAnswer === correctAnswer;
-
-        return {
-          ...question,
-          selectedOption: question.answers.findIndex(
-            (answer) => answer === userAnswer
-          ),
-          isCorrect,
-        };
-      });
-
-      setQuestions(updatedQuestions);
-    }
-  };
-
-  // Function to calculate user's score
-  const calculateUserScore = () => {
+  // Function to calculate the user's score
+  const calculateScore = () => {
     let score = 0;
 
-    questions.forEach((question, index) => {
-      const userAnswer = userAnswers[index];
-      const correctAnswer = question.correct_answers[0];
+    // Iterate through each question
+    quizQuestions.forEach((question, questionIndex) => {
+      const correctAnswers = question.correct_answers.map((answer) =>
+        question.answers.indexOf(answer)
+      );
 
-      if (userAnswer === correctAnswer) {
-        score += 1; // Increment score for each correct answer
+      // Check if the user's answer is correct
+      if (
+        selectedAnswers[questionIndex] !== undefined &&
+        correctAnswers.includes(selectedAnswers[questionIndex])
+      ) {
+        score += 1;
       }
     });
 
-    const percentageScore = (score / questions.length) * 100;
-    const roundedScore = percentageScore.toFixed(0); // Round to 0 decimal places
-
-    return roundedScore;
+    return score;
   };
 
-  const handleSubmitQuiz = () => {
-    // Calculate and log user's score
-    const userScore = calculateUserScore();
-    console.log("User's Score:", userScore);
+  // Function to handle the submission of the quiz
+  const handleSubmitQuiz = async () => {
+    // Calculate the user's score
+    const userScore = calculateScore();
 
-    // Create the bodyData object
+    // Prepare user information from localStorage
     const userInfo = JSON.parse(localStorage.getItem("UserInfo"));
-    const ipAddress = localStorage.getItem("IP");
 
-    const bodyData = {
+    // Extract IP address without quotation marks
+    const userIP = localStorage.getItem("IP").replace(/"/g, "");
+
+    // Prepare data to send to the API
+    const postData = {
       name: userInfo.name,
       email: userInfo.email,
-      phone_number: userInfo.phone_number,
+      phone_number: userInfo.phone_number, // Remove double quotes
       score: userScore,
-      status: userScore >= 70 ? "passed" : "failed", // Adjust the threshold as needed
+      status: userScore >= passingScore ? "passed" : "failed",
       course_id: userInfo.course_id,
-      ip_address: ipAddress,
+      ip_address: userIP, // Remove double quotes
       quiz_attempt: {
-        questions: userAnswers.map((answer, index) => {
-          const question = questions[index];
-          const correctAnswer = question.correct_answers[0];
-          const questionData = {
-            question: question.question,
-            question_type: question.question_type,
-            answers: question.answers,
-            correct_answers: question.correct_answers,
-            answer: [answer],
-            failed: [answer !== correctAnswer],
-          };
-          return questionData;
-        }),
+        questions: quizQuestions.map((question, questionIndex) => ({
+          question: question.question,
+          question_type: question.question_type,
+          answers: question.answers,
+          correct_answers: question.correct_answers,
+          answer:
+            selectedAnswers[questionIndex] !== undefined
+              ? [question.answers[selectedAnswers[questionIndex]]]
+              : [], // Include an empty array if the answer is undefined
+          failed: [userScore < passingScore],
+        })),
       },
     };
 
-    // Store bodyData in localStorage
-    localStorage.setItem("bodyData", JSON.stringify(bodyData));
+    // Log the data (you can remove this line in production)
+    console.log("Data to send to API:", postData);
 
-    // Perform any additional actions (e.g., API call) with user's score here
+    // Send the data to the API (replace the URL with your actual API endpoint)
+    try {
+      const response = await fetch(
+        "https://backend.pluralcode.institute/student/save-quiz-attempt",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
 
-    // Redirect or navigate to the status page
-    setTimeout(() => {
-      navigate("/status");
-    }, 2000);
+      if (response.ok) {
+        console.log("Data sent successfully!");
+      } else {
+        console.error("Error sending data to API:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending data to API:", error.message);
+    }
+
+    // Add your logic for submitting the quiz here
+    console.log("Quiz submitted!");
+  };
+
+  useEffect(() => {
+    const quizResponse = localStorage.getItem("QuizResponse");
+
+    if (!quizResponse) {
+      console.log("QuizResponse not found in local storage");
+      return;
+    }
+
+    try {
+      const quizData = JSON.parse(quizResponse);
+
+      if (
+        quizData &&
+        quizData.message &&
+        quizData.message === "No record found"
+      ) {
+        // Make API call to fetch quiz questions
+        setIsRetakeQuiz(false);
+        fetchQuizQuestions();
+      } else if (
+        quizData &&
+        quizData.quiz_questions &&
+        quizData.quiz_questions.questions
+      ) {
+        // Use quizData directly for rendering questions
+        console.log("QuizData:", quizData);
+        setIsRetakeQuiz(true);
+        setQuizQuestions(quizData.quiz_questions.questions);
+      } else {
+        console.error("Invalid QuizResponse format");
+      }
+    } catch (error) {
+      console.error("Error parsing QuizResponse:", error);
+    }
+  }, []);
+
+  const showGoBackButton =
+    new URLSearchParams(location.search).get("viewResult") === "true";
+
+  const fetchQuizQuestions = () => {
+    // Make API call to fetch quiz questions
+    const requestOptions = {
+      method: "GET",
+      redirect: "follow",
+    };
+
+    fetch(
+      "https://backend.pluralcode.institute/student/get-quiz?course_id=91",
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((result) => {
+        console.log("Fetched Quiz Questions:", result);
+        setIsRetakeQuiz(false);
+        setQuizQuestions(result.message.questions);
+      })
+      .catch((error) => console.error("Error fetching quiz questions:", error));
   };
 
   return (
     <div className="w-full md:w-[80%] h-max mx-auto p-[25px] md:p-16">
       <h1 className="text-pc-blue text-[40px] font-bold mb-2 mt-8 md:mt-0">
-        Quiz Page
+        {isRetakeQuiz ? "Retake Quiz" : "Quiz"}
       </h1>
       <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
         Answer All Questions
       </h1>
-      {questions.map((question, questionIndex) => (
+      {showGoBackButton && (
+        <Link to="/scores">
+          <button>Go back to scores</button>
+        </Link>
+      )}
+      {quizQuestions.map((question, questionIndex) => (
         <div key={questionIndex} className="mb-4">
-          <p className="font-bold mb-2 capitalize text-[18px]">{`${
-            questionIndex + 1
-          }. ${question.question}`}</p>
-          <ol type="A" className="space-y-2 pl-4">
+          <p className="font-bold mb-2 capitalize text-[18px]">
+            {`${questionIndex + 1}. ${question.question}`}{" "}
+            {/* Numbered question */}
+          </p>
+          <ul className="space-y-2 pl-4">
             {question.answers.map((answer, optionIndex) => (
-              <li
-                key={optionIndex}
-                className={`py-1 ${
-                  question.isCorrect !== undefined &&
-                  optionIndex === question.selectedOption
-                    ? question.isCorrect
-                      ? "text-[#008000]" // Green for correct answer
-                      : "text-[#FF0000]" // Red for incorrect answer
-                    : ""
-                }`}
-              >
+              <li className="py-1" key={optionIndex}>
                 <input
                   type="radio"
-                  id={`q${questionIndex + 1}-a${optionIndex}`}
-                  name={`q${questionIndex + 1}`}
-                  checked={question.selectedOption === optionIndex}
+                  id={`q${questionIndex}o${optionIndex}`}
+                  name={`question${questionIndex}`}
                   onChange={() =>
-                    handleOptionSelect(questionIndex, optionIndex)
+                    handleSelectAnswer(questionIndex, optionIndex)
                   }
                 />
                 <label
+                  htmlFor={`q${questionIndex}o${optionIndex}`}
                   className="pl-2 cursor-pointer"
-                  htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
                 >
-                  {answer}
+                  {String.fromCharCode(65 + optionIndex)}. {answer}
                 </label>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       ))}
-
-      <div className="w-full flex items-center justify-center">
-        <button
-          className={`py-2 md:py-3 px-7 ${
-            isSubmitDisabled
-              ? "bg-[#CCCCCC] cursor-not-allowed"
-              : "bg-pc-blue text-white cursor-pointer"
-          } rounded-md font-normal w-full md:w-[35%] h-[51px] mt-10`}
-          disabled={isSubmitDisabled}
-          onClick={handleSubmitQuiz}
-        >
-          Submit Quiz
-        </button>
-      </div>
+      <button
+        onClick={handleSubmitQuiz}
+        disabled={isSubmitButtonDisabled}
+        className={`${
+          isSubmitButtonDisabled ? "bg-pc-light-gray" : "bg-pc-orange"
+        } text-white px-4 py-2 rounded mt-4`}
+      >
+        Submit Quiz
+      </button>
     </div>
   );
 };

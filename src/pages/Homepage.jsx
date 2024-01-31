@@ -45,7 +45,7 @@ const Homepage = () => {
     console.log("Selected Course ID:", selectedValue);
   };
 
-  const handleProceedToQuiz = () => {
+  const handleProceedToQuiz = async () => {
     // Validate the form before proceeding to the quiz
     const errors = {
       fullName: fullName === "",
@@ -93,14 +93,22 @@ const Homepage = () => {
 
       console.log(apiUrl);
 
-      fetch(apiUrl, { method: "GET", redirect: "follow" })
-        .then((response) => response.text())
-        .then((result) => {
-          console.log(result);
+      try {
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          redirect: "follow",
+        });
 
-          navigate("/quiz");
-        })
-        .catch((error) => console.log("error", error));
+        const result = await response.json();
+        console.log(result);
+
+        // Save the quiz response in local storage
+        localStorage.setItem("QuizResponse", JSON.stringify(result));
+
+        navigate("/quiz");
+      } catch (error) {
+        console.log("Error fetching quiz information:", error);
+      }
     }
   };
 
