@@ -81,9 +81,9 @@ const Status = () => {
               >
                 View Result
               </button>
-              <button className="py-2 md:py-3 px-7 bg-pc-orange font-normal rounded-md w-full md:w-[200px] h-[51px]">
+              {/* <button className="py-2 md:py-3 px-7 bg-pc-orange font-normal rounded-md w-full md:w-[200px] h-[51px]">
                 Try Again
-              </button>
+              </button> */}
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between mt-10 gap-6 font-font-gilroy-regular font-bold w-full py-7 border-b border-pc-light-gray">
