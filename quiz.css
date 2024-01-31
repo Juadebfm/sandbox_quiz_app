@@ -1,0 +1,189 @@
+@font-face {
+  font-family: "Gilroy_Thin";
+  src: url(./fonts/Gilroy-Thin.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Italic";
+  src: url(./fonts/Gilroy-LightItalic.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Regular";
+  src: url(./fonts/Gilroy-Regular.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Medium";
+  src: url(./fonts/Gilroy-Medium.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Semibold";
+  src: url(./fonts/Gilroy-SemiBold.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Bold";
+  src: url(./fonts/Gilroy-Bold.ttf);
+}
+@font-face {
+  font-family: "Gilroy_Black";
+  src: url(./fonts/Gilroy-Black.ttf);
+}
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&display=swap");
+
+:root {
+  /* //font family */
+  --font-gilroy-thin: "Gilroy_Thin", sans-serif;
+  --font-gilroy-italic: "Gilroy_Italic", sans-serif;
+
+  --font-gilroy-regular: "Gilroy_Regular", sans-serif;
+  --font-gilroy-medium: "Gilroy_Medium", sans-serif;
+  --font-gilroy-semibold: "Gilroy_Semibold", sans-serif;
+  --font-gilroy-bold: "Gilroy_Bold", sans-serif;
+  --font-gilroy-black: "Gilroy_Black", sans-serif;
+  /* //font size */
+  --heading-1: 28px;
+  --heading-2: 22px;
+  --big-text: 18px;
+  --normal-text: 16px;
+  --small-text: 14px;
+  /* //colors */
+  --pc-blue: #222057;
+  --pc-black: #232323;
+  --pc-orange: #f8991d;
+  --pc-light-gray: #939393;
+  --pc-dark-gray: #323232;
+  --pc-white-white: #ffffff;
+  --pc-bg: #f5f6fa;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-gilroy-regular);
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--pc-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
+  text-rendering: optimizeLegibility;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden !important;
+}
+
+.btn_div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn_custom {
+  font-family: var(--font-gilroy-regular);
+  background-color: var(--pc-orange);
+  border: none;
+  outline: none;
+  font-size: var(--big-text);
+  color: var(--pc-white-white);
+  width: 50%;
+  margin: auto;
+  margin-top: 25px;
+  padding: 5px 18px;
+  cursor: pointer;
+  height: 48.23px;
+  border-radius: 8px;
+}
+
+/* // pages  */
+.home main {
+  padding: 2.5rem 0px;
+  width: 60%;
+  height: max-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.home main > h1 {
+  font-size: 37px;
+  font-family: var(--font-gilroy-bold);
+  color: var(--pc-blue);
+  margin-bottom: 30px;
+}
+
+.home main > form {
+  width: 100%;
+  padding: 25px 75px;
+}
+
+.home main > form > div {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  flex-direction: column;
+  margin-bottom: 25px;
+}
+
+.home main > form > div input {
+  width: 100%;
+  height: 48px;
+  margin-top: 12px;
+  border: 1px solid var(--pc-light-gray);
+  border-radius: 8px;
+  padding: 0 18px;
+}
+
+.home main > form > div > input:focus {
+  border: 1px solid var(--pc-orange) !important;
+  outline: none !important;
+}
+
+.home main > form > div > select {
+  width: 100%;
+  height: 48px;
+  margin-top: 12px;
+  border: 1px solid var(--pc-light-gray);
+  border-radius: 8px;
+  padding: 0 18px;
+  outline: none !important;
+}
+
+.home main > form > div > select:active,
+.home main > form > div > select:focus {
+  border: 1px solid var(--pc-orange) !important;
+  outline: none !important;
+}
+@media (max-width: 700px) {
+  .home main > h1 {
+    padding: 0 25px;
+    text-align: center;
+    font-size: 35px;
+  }
+  body {
+    height: max-content;
+  }
+  .home main {
+    width: 100%;
+    height: max-content;
+    margin: 50px auto;
+  }
+  .home main > form {
+    width: 100%;
+    padding: 1.5rem;
+  }
+  .btn_custom {
+    width: 100%;
+    font-size: var(--normal-text);
+  }
+}
