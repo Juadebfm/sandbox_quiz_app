@@ -197,16 +197,18 @@ const QuizPage = () => {
 
   return (
     <div className="w-full md:w-[80%] h-max mx-auto p-[25px] md:p-16">
-      <h1 className="text-pc-blue text-[40px] font-bold mb-2 mt-8 md:mt-0">
+      <h1 className="text-pc-blue text-[40px] font-bold mb-0 md:mb-2 mt-8 md:mt-0">
         {isRetakeQuiz ? "Retake Quiz" : "Quiz"}
       </h1>
-      <div className="flex items-start justify-between">
-        <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
+      <div className="flex flex-col-reverse md:flex-row items-start justify-between py-4 md:py-0">
+        <h1 className="text-pc-blue text-[28px] font-bold mb-0 md:mb-10 capitalize">
           Answer All Questions
         </h1>
         {showGoBackButton && (
-          <Link to="/status">
-            <button className="px-4 py-2 rounded bg-pc-blue text-white capitalize">Go back to scores</button>
+          <Link to="/status" className="mb-4 md:mb-0">
+            <button className="px-4 py-2 rounded bg-pc-blue text-white capitalize w-full">
+              Go back to scores
+            </button>
           </Link>
         )}
       </div>
@@ -243,7 +245,7 @@ const QuizPage = () => {
         disabled={isSubmitButtonDisabled}
         className={`${
           isSubmitButtonDisabled ? "bg-pc-light-gray" : "bg-pc-orange"
-        } text-white px-4 py-2 rounded mt-4`}
+        } text-white px-4 py-2 rounded mt-4 w-full md:w-max`}
       >
         Submit Quiz
       </button>
