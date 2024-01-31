@@ -85,21 +85,20 @@ const Homepage = () => {
       const stringifyUserInfo = JSON.stringify(userInfo);
       localStorage.setItem("UserInfo", stringifyUserInfo);
 
-      const userIpAddress = localStorage.getItem("IP");
+      // Retrieve the IP address from local storage and remove quotes
+      const userIpAddress = localStorage.getItem("IP").replace(/"/g, "");
 
       // Check if the user already has quiz information
-      const apiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${userIpAddress}&email=${email}`;
+      const apiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${userIpAddress}&email=${email}&course_id=${selectedCourseId}`;
+
+      console.log(apiUrl);
 
       fetch(apiUrl, { method: "GET", redirect: "follow" })
         .then((response) => response.text())
         .then((result) => {
           console.log(result);
 
-          // If the user has quiz information, navigate to the quiz page
-          // Otherwise, navigate to the status page
-          const isExistingUser = result === "existing_user";
-          const pathToNavigate = isExistingUser ? "/quiz" : "/status";
-          navigate(pathToNavigate);
+          navigate("/quiz");
         })
         .catch((error) => console.log("error", error));
     }
