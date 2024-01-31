@@ -200,14 +200,16 @@ const QuizPage = () => {
       <h1 className="text-pc-blue text-[40px] font-bold mb-2 mt-8 md:mt-0">
         {isRetakeQuiz ? "Retake Quiz" : "Quiz"}
       </h1>
-      <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
-        Answer All Questions
-      </h1>
-      {showGoBackButton && (
-        <Link to="/scores">
-          <button>Go back to scores</button>
-        </Link>
-      )}
+      <div className="flex items-start justify-between">
+        <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
+          Answer All Questions
+        </h1>
+        {showGoBackButton && (
+          <Link to="/status">
+            <button className="px-4 py-2 rounded bg-pc-blue text-white capitalize">Go back to scores</button>
+          </Link>
+        )}
+      </div>
       {quizQuestions.map((question, questionIndex) => (
         <div key={questionIndex} className="mb-4">
           <p className="font-bold mb-2 capitalize text-[18px]">
