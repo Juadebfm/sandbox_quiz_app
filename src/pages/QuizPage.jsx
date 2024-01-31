@@ -21,8 +21,16 @@ const QuizPage = () => {
     if (viewResultParam && viewResultParam.toLowerCase() === "true") {
       // If viewResult=true, highlight user selections
       highlightUserSelections();
+
+      // Set timeout to navigate to home page after 5 minutes
+      const timeoutId = setTimeout(() => {
+        navigate("/"); // Replace "/" with the desired home page URL
+      }, 300000); // 5 minutes in milliseconds
+
+      // Clear the timeout when the component is unmounted
+      return () => clearTimeout(timeoutId);
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   const fetchQuizData = () => {
     // Retrieve user information from local storage
@@ -173,41 +181,44 @@ const QuizPage = () => {
       <h1 className="text-pc-blue text-[28px] font-bold mb-10 capitalize">
         Answer All Questions
       </h1>
-{questions.map((question, questionIndex) => (
-  <div key={questionIndex} className="mb-4">
-    <p className="font-bold mb-2 capitalize text-[18px]">{`${
-      questionIndex + 1
-    }. ${question.question}`}</p>
-    <ol type="A" className="space-y-2 pl-4">
-      {question.answers.map((answer, optionIndex) => (
-        <li
-          key={optionIndex}
-          className={`py-1 ${
-            question.isCorrect !== undefined && optionIndex === question.selectedOption
-              ? question.isCorrect
-                ? 'text-[#008000]' // Green for correct answer
-                : 'text-[#FF0000]' // Red for incorrect answer
-              : ''
-          }`}
-        >
-          <input
-            type="radio"
-            id={`q${questionIndex + 1}-a${optionIndex}`}
-            name={`q${questionIndex + 1}`}
-            checked={question.selectedOption === optionIndex}
-            onChange={() => handleOptionSelect(questionIndex, optionIndex)}
-          />
-          <label
-            className="pl-2 cursor-pointer"
-            htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
-          >
-            {answer}
-          </label>
-        </li>
+      {questions.map((question, questionIndex) => (
+        <div key={questionIndex} className="mb-4">
+          <p className="font-bold mb-2 capitalize text-[18px]">{`${
+            questionIndex + 1
+          }. ${question.question}`}</p>
+          <ol type="A" className="space-y-2 pl-4">
+            {question.answers.map((answer, optionIndex) => (
+              <li
+                key={optionIndex}
+                className={`py-1 ${
+                  question.isCorrect !== undefined &&
+                  optionIndex === question.selectedOption
+                    ? question.isCorrect
+                      ? "text-[#008000]" // Green for correct answer
+                      : "text-[#FF0000]" // Red for incorrect answer
+                    : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  id={`q${questionIndex + 1}-a${optionIndex}`}
+                  name={`q${questionIndex + 1}`}
+                  checked={question.selectedOption === optionIndex}
+                  onChange={() =>
+                    handleOptionSelect(questionIndex, optionIndex)
+                  }
+                />
+                <label
+                  className="pl-2 cursor-pointer"
+                  htmlFor={`q${questionIndex + 1}-a${optionIndex}`}
+                >
+                  {answer}
+                </label>
+              </li>
+            ))}
+          </ol>
+        </div>
       ))}
-    </ol>
-  </div>
-))}
 
       <div className="w-full flex items-center justify-center">
         <button
