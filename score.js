@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const congratsMessage = document.getElementById("congrats");
   const failedMessage = document.getElementById("failed");
 
+  // Hide both messages initially
+  congratsMessage.style.display = "none";
+  failedMessage.style.display = "none";
+
   // Flag to determine if the "Try Again" button should be shown
   let showTryAgainButton = true;
 
@@ -60,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Event listener for "Try Again" button
   const tryAgainButton = document.getElementById("try_again");
+  tryAgainButton.style.display = "none";
   tryAgainButton.addEventListener("click", function () {
     // Implement logic to reset the quiz and start again
     // You can decide what action to perform when the button is clicked
