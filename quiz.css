@@ -143,6 +143,7 @@ body {
   border: 1px solid var(--pc-light-gray);
   border-radius: 8px;
   padding: 0 18px;
+  font-size: inherit;
 }
 
 .home main > form > div > input:focus {
