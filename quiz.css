@@ -108,7 +108,7 @@ body {
 .quiz main {
   padding: 2.5rem 0px;
   width: 60%;
-  height: max-content;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
