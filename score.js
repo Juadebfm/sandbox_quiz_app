@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const formDataString = localStorage.getItem("quizAttemptData");
   const formData = JSON.parse(formDataString);
   const userScore = formData.score;
+  const course_id = formData.course_id;
 
   console.log(formData.ip_address);
 
@@ -22,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let showTryAgainButton = true;
 
   // API call to check if the user can retake the quiz
-  const checkQuizApiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}`;
+  const checkQuizApiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}&course_id=${course_id}`;
 
   fetch(checkQuizApiUrl)
     .then((response) => response.json())
@@ -66,8 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const tryAgainButton = document.getElementById("try_again");
   tryAgainButton.style.display = "none";
   tryAgainButton.addEventListener("click", function () {
-    // Implement logic to reset the quiz and start again
-    // You can decide what action to perform when the button is clicked
+    // Navigate to the quiz page with the "view_result=true" parameter
+    window.location.href = "quiz.html";
   });
 
   // Function to update the UI based on the quiz status
