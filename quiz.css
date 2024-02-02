@@ -292,6 +292,13 @@ body {
   padding-left: 32px;
 }
 
+.quiz_results_btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
 #score {
   font-weight: bold;
 }
@@ -401,6 +408,8 @@ body {
   .quiz_results_btns {
     padding-left: 0px;
     width: 100%;
+    flex-direction: column;
+    gap: 0;
   }
   .grade_board {
     display: flex;
