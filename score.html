@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Score</title>
+    <link rel="stylesheet" href="./quiz.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="score">
+    <div class="quiz_results_details">
+      <div class="quiz_results_text">
+        <div class="success_fail_text">
+          <h3 id="congrats">
+            <i class="bx bxs-check-circle"></i> Congratulations ! You Passed
+          </h3>
+          <h3 id="failed">
+            <i class="bx bxs-check-circle"></i> Sorry ! You Didn't Pass The Quiz
+          </h3>
+        </div>
+      </div>
+    </div>
+    <div class="grade_jumb">
+      <div class="grade_board">
+        <span class="grade_">Grade Received: <span id="score">---</span></span>
+        <span>| To pass 70% or higher</span>
+      </div>
+      <div class="quiz_results_btns">
+        <button class="view_result" id="view_results">View Results</button>
+        <button class="quiz_try_again" id="try_again">Try Again</button>
+      </div>
+    </div>
+    <script src="./score.js"></script>
+  </body>
+</html>

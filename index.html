@@ -5,28 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PluralCode Sandbox Quiz</title>
     <link rel="stylesheet" href="./quiz.css" />
-
   </head>
   <body class="home">
     <main>
       <h1>Fill The Form To Start</h1>
+      <div class="error_message"></div>
       <form action="">
         <div>
-          <label for="Full Name">Full Name</label>
-          <input type="text" placeholder="Enter Full Name" />
+          <label for="name">Full Name</label>
+          <input name="name" type="text" placeholder="Enter Full Name" />
         </div>
         <div>
-          <label for="Email">Email</label>
-          <input type="email" placeholder="Enter Email" />
+          <label for="email">Email</label>
+          <input name="email" type="email" placeholder="Enter Email" />
         </div>
         <div>
-          <label for="Phone">Phone</label>
-          <input type="tel" placeholder="Enter Phone Number" />
+          <label for="phone_number">Phone</label>
+          <input
+            name="phone_number"
+            type="tel"
+            placeholder="Enter Phone Number"
+          />
         </div>
         <div>
-          <label for="Course Of Interest">Course Of Interest</label>
+          <label for="course_id">Course Of Interest</label>
           <select
-            name="Course Of Interest"
+            name="course_id"
             id=""
             class="form-select"
             aria-label="Courses Selection"
