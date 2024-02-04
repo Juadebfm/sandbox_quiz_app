@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   const form = document.querySelector("form");
   const errorMessageDiv = document.querySelector(".error_message");
   const submitButton = document.querySelector(".btn_custom");
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   // Validate and submit form
-  form.addEventListener("submit", function (event) {
+  form.addEventListener("submit", async function (event) {
     // Prevent the default form submission
     event.preventDefault();
 
@@ -51,6 +51,19 @@ document.addEventListener("DOMContentLoaded", function () {
       course_id: "",
       ip_address: "",
     };
+
+    // Get the user's IP address before making the API request
+    try {
+      const ipResponse = await fetch(
+        "https://ipinfo.io/json?token=3a43dc16a53806"
+      );
+      const ipJson = await ipResponse.json();
+      formData.ip_address = ipJson.ip;
+      console.log(formData.ip_address, ipJson.country);
+    } catch (error) {
+      console.error("Error getting IP address:", error.message);
+      // Handle error if needed
+    }
 
     inputs.forEach((input) => {
       if (input.value.trim() === "") {
@@ -78,6 +91,9 @@ document.addEventListener("DOMContentLoaded", function () {
       formData.course_id = courseSelect.value;
     }
 
+    // Save form data to local storage before API request
+    saveFormDataToLocal(formData);
+
     // Display error message if the form is not valid
     if (!formIsValid) {
       errorMessageDiv.textContent = "Please fill out all required fields.";
@@ -87,35 +103,47 @@ document.addEventListener("DOMContentLoaded", function () {
       // Clear the error message if the form is valid
       errorMessageDiv.textContent = "";
 
-      // Get the user's IP address and log it to the console
-      fetch("https://ipapi.co/json/")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Error fetching IP address");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          // Log the IP address to the console
-          console.log("User IP Address:", data.ip);
+      // Make API request to check if the user can retake the quiz
+      const apiEndpoint = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}&course_id=${formData.course_id}`;
 
-          // Store IP address in formData object
-          formData.ip_address = data.ip;
+      try {
+        const response = await fetch(apiEndpoint);
+        const result = await response.json();
 
-          // Save the form data in local storage
-          localStorage.setItem("formData", JSON.stringify(formData));
+        // Log the API response
+        console.log("API Response:", result);
 
-          // Navigate to the quiz page
+        // Continue with the rest of the logic (redirecting based on API response)
+        if (result.retake_quiz === false) {
+          // Save the API response to local storage for later use
+          saveApiResultToLocal(result);
+          // Redirect the user to wait.html
+          console.log("User should wait. Redirecting to wait.html");
+          window.location.href = "score.html";
+          window.location.href = `score.html?timeleft=${result.timeleft}`;
+
+        } else if (result.retake_quiz === true) {
+          // Redirect the user to quiz.html
+          console.log("User can retake the quiz. Redirecting to quiz.html");
           window.location.href = "quiz.html";
-
-          // Proceed with other actions, e.g., quiz submission
-          console.log("Form is valid. Proceeding to quiz.");
-        })
-        .catch((error) => {
-          console.error("Error fetching IP address:", error.message);
-        });
+        } else if (result.message === "No record found") {
+          // Redirect the user to quiz.html (or another page) for cases with "no record found"
+          console.log("No record found. Redirecting to quiz.html");
+          window.location.href = "quiz.html";
+        } else {
+          // Handle other cases if needed
+          console.log("Unknown response. Do something else...");
+        }
+      } catch (error) {
+        console.error("Error checking quiz:", error.message);
+      }
     }
   });
+
+  function saveFormDataToLocal(formData) {
+    // Convert the formData object to a JSON string and save it to local storage
+    localStorage.setItem("formData", JSON.stringify(formData));
+  }
 
   function highlightInput(element) {
     element.style.border = "2px solid red";
@@ -124,4 +152,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function resetInput(element) {
     element.style.border = "1px solid var(--pc-light-gray)";
   }
+  function saveApiResultToLocal(result) {
+    localStorage.setItem("apiResult", JSON.stringify(result));
+  }
+  
 });

@@ -176,11 +176,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to save quiz attempt data to local storage
     function saveQuizAttempt(formData, questions, userScore) {
+      const userScoreString = userScore.toString();
+
       const quizAttemptData = {
         name: formData.name,
         email: formData.email,
         phone_number: formData.phone_number,
-        score: userScore,
+        score: userScoreString,
         status: userScore >= 70 ? "passed" : "failed",
         course_id: formData.course_id,
         ip_address: formData.ip_address.replace(/"/g, ""),
@@ -206,6 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       console.log(quizAttemptData);
+      console.log(quizAttemptData.score);
 
       // Save quiz attempt data to local storage
       localStorage.setItem("quizAttemptData", JSON.stringify(quizAttemptData));
@@ -239,14 +242,48 @@ document.addEventListener("DOMContentLoaded", function () {
           submitButton.textContent = "Submit";
           // Check if the API call was successful
           if (result === '{"message":"success"}') {
-            // Navigate to the scores page (update the URL accordingly)
-            window.location.href = "/score.html";
+            // Log a success message when the attempt is saved
+            console.log("Quiz attempt successfully saved!");
+
+            // Now, let's call the additional API to get retake_quiz and timeleft
+            checkQuizStatus();
           }
         })
         .catch((error) => {
           console.log("error", error); // Handle error - you may want to display an error message or retry logic
           submitButton.textContent = "Submit";
         });
+
+      // Function to check quiz status after a successful attempt
+      function checkQuizStatus() {
+        const checkQuizUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${quizAttemptData.ip_address}&email=${quizAttemptData.email}&course_id=${quizAttemptData.course_id}`;
+
+        fetch(checkQuizUrl, { method: "GET", redirect: "follow" })
+          .then((response) => response.json())
+          .then((result) => {
+            console.log(result);
+
+            // Check if the API response has retake_quiz and timeleft
+            if (result.retake_quiz === false && result.timeleft) {
+              console.log("User should wait", result.timeleft);
+
+              // Append timeleft to the score page URL
+              const currentUrl = window.location.href;
+              const separator = currentUrl.includes("?") ? "&" : "?";
+              const newUrl = `${currentUrl}${separator}timeleft=${result.timeleft}`;
+
+              // Navigate to the scores page with the updated URL
+              window.location.href = "/score.html";
+            } else {
+              // Navigate to the scores page with the updated URL
+              window.location.href = "/score.html";
+            }
+          })
+          .catch((error) => {
+            console.log("Error checking quiz status:", error);
+            // Handle error for the quiz status API call
+          });
+      }
     }
   }
 

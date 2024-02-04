@@ -1,11 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Retrieve user's score percentage from local storage
+  // Retrieve user's score percentage and timeleft from local storage
   const formDataString = localStorage.getItem("quizAttemptData");
   const formData = JSON.parse(formDataString);
   const userScore = formData.score;
   const course_id = formData.course_id;
 
-  console.log(formData.ip_address);
+  // Get the timeleft parameter from the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const timeleftParam = urlParams.get("timeleft");
 
   // Display user's score on the page
   const scoreElement = document.getElementById("score");
@@ -22,6 +24,29 @@ document.addEventListener("DOMContentLoaded", function () {
   // Flag to determine if the "Try Again" button should be shown
   let showTryAgainButton = true;
 
+  function convertMillisecondsToDHM(milliseconds) {
+    const seconds = Math.floor(milliseconds / 1000);
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((seconds % (60 * 60)) / 60);
+    const remainingSeconds = seconds % 60;
+
+    console.log("Converted to DHM:", {
+      days,
+      hours,
+      minutes,
+      remainingSeconds,
+    });
+
+    return { days, hours, minutes, remainingSeconds };
+  }
+
+  if (timeleftParam) {
+    console.log("Timeleft parameter found:", timeleftParam);
+    const timeLeftSeconds = parseInt(timeleftParam);
+    displayTimeLeft(timeLeftSeconds);
+  }
+
   // API call to check if the user can retake the quiz
   const checkQuizApiUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}&course_id=${course_id}`;
 
@@ -30,20 +55,15 @@ document.addEventListener("DOMContentLoaded", function () {
     .then((result) => {
       console.log(result);
 
-      // Check if the user can retake the quiz
-      if (result.retake_quiz) {
-        // Check if there is a countdown time
-        if (result.message > 0) {
-          // Display countdown and hide "Try Again" button
-          showTryAgainButton = false;
-          displayCountdown(result.message);
-        } else {
-          // Show "Try Again" button immediately
-          showTryAgainButton = true;
-        }
-      } else {
-        // User cannot retake the quiz, hide "Try Again" button
+      // / Check if the user can retake the quiz
+      if (result.retake_quiz === false) {
+        // Display the countdown only if retake_quiz is false
+        displayTimeLeft(result.timeleft, result.retake_quiz);
+        // Hide "Try Again" button
         showTryAgainButton = false;
+      } else {
+        // User can retake the quiz, show "Try Again" button
+        showTryAgainButton = true;
       }
 
       // Display appropriate messages and set button visibility
@@ -52,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => {
       console.log("error", error);
       // Handle error - you may want to display an error message or retry logic
-      // For now, assume user can retake the quiz and show the "Try Again" button
+      // For now, assume the user can retake the quiz and show the "Try Again" button
       updateUIBasedOnQuizStatus(true);
     });
 
@@ -87,10 +107,43 @@ document.addEventListener("DOMContentLoaded", function () {
     tryAgainButton.style.display = showTryAgain ? "block" : "none";
   }
 
-  // Function to display countdown
-  function displayCountdown(countdownTime) {
-    // Implement the countdown logic here
-    // You can use setInterval or a countdown library to update the UI with the remaining time
-    // Once the countdown finishes, show the "Try Again" button
+  function displayTimeLeft(timeLeft) {
+    console.log("Displaying time left:", timeLeft);
+
+    const timeLeftElement = document.querySelector(".countDownElement");
+
+    if (!timeLeftElement) {
+      console.error("Error: countDownElement not found!");
+      return;
+    }
+
+    function updateCountdown() {
+      if (timeLeft > 0) {
+        const countdown = convertMillisecondsToDHM(timeLeft);
+
+        if (
+          countdown.days > 0 ||
+          countdown.hours > 0 ||
+          countdown.minutes > 0
+        ) {
+          timeLeftElement.textContent = `Time left: ${countdown.days} days, ${countdown.hours} hours, ${countdown.minutes} minutes, ${countdown.remainingSeconds} seconds`;
+        } else if (countdown.remainingSeconds > 0) {
+          timeLeftElement.textContent = `Time left: ${countdown.remainingSeconds} seconds`;
+        }
+
+        timeLeft -= 1000; // Subtract 1 second
+      } else {
+        console.log("No time left. Refreshing the page.");
+        clearInterval(countdownInterval);
+        // Refresh the page when timeLeft becomes 0
+        window.location.reload();
+      }
+    }
+
+    // Initial update
+    updateCountdown();
+
+    // Update the countdown every second
+    const countdownInterval = setInterval(updateCountdown, 1000);
   }
 });
