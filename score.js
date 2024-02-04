@@ -66,8 +66,11 @@ document.addEventListener("DOMContentLoaded", function () {
         showTryAgainButton = true;
       }
 
-      // Display appropriate messages and set button visibility
-      updateUIBasedOnQuizStatus(showTryAgainButton);
+      // // Display appropriate messages and set button visibility
+      // updateUIBasedOnQuizStatus(showTryAgainButton);
+
+        // Display appropriate messages and set button visibility
+    updateUIBasedOnQuizStatus(showTryAgainButton, result.timeleft);
     })
     .catch((error) => {
       console.log("error", error);
@@ -97,6 +100,9 @@ document.addEventListener("DOMContentLoaded", function () {
       congratsMessage.style.display = "block";
       failedMessage.style.display = "none";
       scoreElement.style.color = "green";
+
+      // If user passed with score above 70 and timeleft is null, hide the "Try Again" button
+      tryAgainButton.style.display = timeleft === null ? "none" : "block";
     } else {
       congratsMessage.style.display = "none";
       failedMessage.style.display = "block";

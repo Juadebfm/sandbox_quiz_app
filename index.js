@@ -117,11 +117,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (result.retake_quiz === false) {
           // Save the API response to local storage for later use
           saveApiResultToLocal(result);
-          // Redirect the user to wait.html
-          console.log("User should wait. Redirecting to wait.html");
-          window.location.href = "score.html";
-          window.location.href = `score.html?timeleft=${result.timeleft}`;
 
+          // Redirect the user to score.html without adding timeleft to the URL if timeleft is null
+          console.log("User should wait. Redirecting to score.html");
+          if (result.timeleft !== null) {
+            // Only add timeleft to the URL if it is not null
+            window.location.href = `score.html?timeleft=${result.timeleft}`;
+          } else {
+            window.location.href = "score.html";
+          }
         } else if (result.retake_quiz === true) {
           // Redirect the user to quiz.html
           console.log("User can retake the quiz. Redirecting to quiz.html");
@@ -155,5 +159,4 @@ document.addEventListener("DOMContentLoaded", async function () {
   function saveApiResultToLocal(result) {
     localStorage.setItem("apiResult", JSON.stringify(result));
   }
-  
 });
