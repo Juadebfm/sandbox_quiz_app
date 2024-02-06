@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  let data; // Declare a variable to store the data globally
+
   // Get course_id from local storage
   const formDataString = localStorage.getItem("formData");
   const formData = JSON.parse(formDataString);
@@ -14,8 +16,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const apiUrl = `https://backend.pluralcode.institute/student/get-quiz?course_id=${course_id}`;
   fetch(apiUrl)
     .then((response) => response.json())
-    .then((data) => {
-      console.log(data);
+    .then((responseData) => {
+      console.log(responseData);
+      data = responseData; // Store the data globally
       renderQuiz(data.message.questions);
     })
     .catch((error) => {
@@ -86,14 +89,21 @@ document.addEventListener("DOMContentLoaded", function () {
       quizContainer.appendChild(questionDiv);
     });
 
-    // Function to log selection and correct answer
-    function logSelection(question, selectedAnswer) {
-      console.log("Selected Option:", selectedAnswer);
-      console.log("Correct Answer:", question.correct_answers[0]);
-    }
+    // Create and append submit button after rendering questions
+    createSubmitButton();
+  }
 
-    // Function to create and append submit button
-    function createSubmitButton() {
+  // Function to log selection and correct answer
+  function logSelection(question, selectedAnswer) {
+    console.log("Selected Option:", selectedAnswer);
+    console.log("Correct Answer:", question.correct_answers[0]);
+  }
+
+  // Function to create and append submit button
+  function createSubmitButton() {
+    // Check if the submit button already exists
+    const existingSubmitButton = document.querySelector(".submit_button");
+    if (!existingSubmitButton) {
       const submitButton = document.createElement("button");
       submitButton.textContent = "Submit";
       submitButton.classList.add("submit_button");
@@ -105,190 +115,186 @@ document.addEventListener("DOMContentLoaded", function () {
         submitButton.textContent = "Calculating";
 
         // Add functionality for calculating the user's score
-        const userScore = calculateUserScore(questions);
+        const userScore = calculateUserScore(data.message.questions);
 
         // Add functionality for saving the quiz attempt
-        saveQuizAttempt(formData, questions, userScore);
+        saveQuizAttempt(formData, data.message.questions, userScore);
       });
 
       // Append submit button to the quiz container
+      const quizContainer = document.querySelector(".quiz_container");
       quizContainer.appendChild(submitButton);
     }
+  }
 
-    // Function to check if view_result=true is present in the URL
-    function isViewResultMode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("view_result") === "true";
-    }
+  // Function to check if view_result=true is present in the URL
+  function isViewResultMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("view_result") === "true";
+  }
 
-    // Function to highlight correct and incorrect selections
-    function highlightSelection(answerItem, question, index) {
-      const quizAttemptDataString = localStorage.getItem("quizAttemptData");
-      const quizAttemptData = JSON.parse(quizAttemptDataString);
+  // Function to highlight correct and incorrect selections
+  function highlightSelection(answerItem, question, index) {
+    const quizAttemptDataString = localStorage.getItem("quizAttemptData");
+    const quizAttemptData = JSON.parse(quizAttemptDataString);
 
-      if (quizAttemptData && quizAttemptData.quiz_attempt) {
-        const userSelection =
-          quizAttemptData.quiz_attempt.questions[index].answer[0];
-        const correctAnswer = question.correct_answers[0];
+    if (quizAttemptData && quizAttemptData.quiz_attempt) {
+      const userSelection =
+        quizAttemptData.quiz_attempt.questions[index].answer[0];
+      const correctAnswer = question.correct_answers[0];
 
-        const radioButtons = answerItem.querySelectorAll(".radio");
-        const selectedRadioButton = Array.from(radioButtons).find(
-          (radio) => radio.value === userSelection
-        );
+      const radioButtons = answerItem.querySelectorAll(".radio");
+      const selectedRadioButton = Array.from(radioButtons).find(
+        (radio) => radio.value === userSelection
+      );
 
-        if (selectedRadioButton) {
-          // Click the radio button for the selected option
-          selectedRadioButton.checked = true;
+      if (selectedRadioButton) {
+        // Click the radio button for the selected option
+        selectedRadioButton.checked = true;
 
-          if (userSelection === correctAnswer) {
-            // Highlight correct selection in green
-            answerItem.style.backgroundColor = "rgba(144, 238, 144, 0.5)";
-          } else {
-            // Highlight incorrect selection in red
-            answerItem.style.backgroundColor = "rgba(255, 99, 71, 0.5)";
-          }
+        if (userSelection === correctAnswer) {
+          // Highlight correct selection in green
+          answerItem.style.backgroundColor = "rgba(144, 238, 144, 0.5)";
+        } else {
+          // Highlight incorrect selection in red
+          answerItem.style.backgroundColor = "rgba(255, 99, 71, 0.5)";
         }
-      }
-    }
-
-    // Function to calculate user's score
-    function calculateUserScore(questions) {
-      let correctAnswers = 0;
-
-      questions.forEach((question, index) => {
-        const radioButtons = document.getElementsByName(`question_${index}`);
-        const selectedAnswer =
-          Array.from(radioButtons).find((radio) => radio.checked)?.value ||
-          null;
-
-        // Check if the selected answer is correct
-        if (selectedAnswer === question.correct_answers[0]) {
-          correctAnswers++;
-        }
-      });
-
-      // Calculate the percentage and round it to the nearest whole number
-      const userScore = (correctAnswers / questions.length) * 100;
-      const roundedUserScore = Math.round(userScore);
-
-      return roundedUserScore;
-    }
-
-    // Function to save quiz attempt data to local storage
-    function saveQuizAttempt(formData, questions, userScore) {
-      const userScoreString = userScore.toString();
-
-      const quizAttemptData = {
-        name: formData.name,
-        email: formData.email,
-        phone_number: formData.phone_number,
-        score: userScoreString,
-        status: userScore >= 70 ? "passed" : "failed",
-        course_id: formData.course_id,
-        ip_address: formData.ip_address.replace(/"/g, ""),
-        quiz_attempt: {
-          questions: questions.map((question, index) => {
-            const radioButtons = document.getElementsByName(
-              `question_${index}`
-            );
-            const selectedAnswer =
-              Array.from(radioButtons).find((radio) => radio.checked)?.value ||
-              null;
-
-            return {
-              question: question.question,
-              question_type: question.question_type,
-              answers: question.answers,
-              correct_answers: question.correct_answers,
-              answer: [selectedAnswer],
-              failed: [selectedAnswer !== question.correct_answers[0]],
-            };
-          }),
-        },
-      };
-
-      console.log(quizAttemptData);
-      console.log(quizAttemptData.score);
-
-      // Save quiz attempt data to local storage
-      localStorage.setItem("quizAttemptData", JSON.stringify(quizAttemptData));
-
-      // Now you can call the API to save the quiz attempt
-      saveQuizAttemptToAPI(quizAttemptData);
-    }
-
-    // Function to save quiz attempt data to the API
-    function saveQuizAttemptToAPI(quizAttemptData) {
-      const requestOptions = {
-        method: "POST",
-        body: JSON.stringify(quizAttemptData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        redirect: "follow",
-      };
-
-      // Change submit button text to "Submit" after the API call is complete
-      const submitButton = document.querySelector(".submit_button");
-      submitButton.textContent = "Submitting...";
-
-      fetch(
-        "https://backend.pluralcode.institute/student/save-quiz-attempt",
-        requestOptions
-      )
-        .then((response) => response.text())
-        .then((result) => {
-          console.log(result); // Change submit button text to "Submit" after the API call is done
-          submitButton.textContent = "Submit";
-          // Check if the API call was successful
-          if (result === '{"message":"success"}') {
-            // Log a success message when the attempt is saved
-            console.log("Quiz attempt successfully saved!");
-
-            // Now, let's call the additional API to get retake_quiz and timeleft
-            checkQuizStatus();
-          }
-        })
-        .catch((error) => {
-          console.log("error", error); // Handle error - you may want to display an error message or retry logic
-          submitButton.textContent = "Submit";
-        });
-
-      // Function to check quiz status after a successful attempt
-      function checkQuizStatus() {
-        const checkQuizUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${quizAttemptData.ip_address}&email=${quizAttemptData.email}&course_id=${quizAttemptData.course_id}`;
-
-        fetch(checkQuizUrl, { method: "GET", redirect: "follow" })
-          .then((response) => response.json())
-          .then((result) => {
-            console.log(result);
-
-            // Check if the API response has retake_quiz and timeleft
-            if (result.retake_quiz === false && result.timeleft) {
-              console.log("User should wait", result.timeleft);
-
-              // Append timeleft to the score page URL
-              const currentUrl = window.location.href;
-              const separator = currentUrl.includes("?") ? "&" : "?";
-              const newUrl = `${currentUrl}${separator}timeleft=${result.timeleft}`;
-
-              // Navigate to the scores page with the updated URL
-              window.location.href = "/score.html";
-            } else {
-              // Navigate to the scores page with the updated URL
-              window.location.href = "/score.html";
-            }
-          })
-          .catch((error) => {
-            console.log("Error checking quiz status:", error);
-            // Handle error for the quiz status API call
-          });
       }
     }
   }
 
-  // Function to create and append button to go back to the score page
-  createBackToScoreButton();
+  // Function to calculate user's score
+  function calculateUserScore(questions) {
+    let correctAnswers = 0;
+
+    questions.forEach((question, index) => {
+      const radioButtons = document.getElementsByName(`question_${index}`);
+      const selectedAnswer =
+        Array.from(radioButtons).find((radio) => radio.checked)?.value || null;
+
+      // Check if the selected answer is correct
+      if (selectedAnswer === question.correct_answers[0]) {
+        correctAnswers++;
+      }
+    });
+
+    // Calculate the percentage and round it to the nearest whole number
+    const userScore = (correctAnswers / questions.length) * 100;
+    const roundedUserScore = Math.round(userScore);
+
+    return roundedUserScore;
+  }
+
+  // Function to save quiz attempt data to local storage
+  function saveQuizAttempt(formData, questions, userScore) {
+    const userScoreString = userScore.toString();
+
+    const quizAttemptData = {
+      name: formData.name,
+      email: formData.email,
+      phone_number: formData.phone_number,
+      score: userScoreString,
+      status: userScore >= 70 ? "passed" : "failed",
+      course_id: formData.course_id,
+      ip_address: formData.ip_address.replace(/"/g, ""),
+      quiz_attempt: {
+        questions: questions.map((question, index) => {
+          const radioButtons = document.getElementsByName(`question_${index}`);
+          const selectedAnswer =
+            Array.from(radioButtons).find((radio) => radio.checked)?.value ||
+            null;
+
+          return {
+            question: question.question,
+            question_type: question.question_type,
+            answers: question.answers,
+            correct_answers: question.correct_answers,
+            answer: [selectedAnswer],
+            failed: [selectedAnswer !== question.correct_answers[0]],
+          };
+        }),
+      },
+    };
+
+    console.log(quizAttemptData);
+    console.log(quizAttemptData.score);
+
+    // Save quiz attempt data to local storage
+    localStorage.setItem("quizAttemptData", JSON.stringify(quizAttemptData));
+
+    // Now you can call the API to save the quiz attempt
+    saveQuizAttemptToAPI(quizAttemptData);
+  }
+
+  // Function to save quiz attempt data to the API
+  function saveQuizAttemptToAPI(quizAttemptData) {
+    const requestOptions = {
+      method: "POST",
+      body: JSON.stringify(quizAttemptData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      redirect: "follow",
+    };
+
+    // Change submit button text to "Submit" after the API call is complete
+    const submitButton = document.querySelector(".submit_button");
+    submitButton.textContent = "Submitting...";
+
+    fetch(
+      "https://backend.pluralcode.institute/student/save-quiz-attempt",
+      requestOptions
+    )
+      .then((response) => response.text())
+      .then((result) => {
+        console.log(result); // Change submit button text to "Submit" after the API call is done
+        submitButton.textContent = "Submit";
+        // Check if the API call was successful
+        if (result === '{"message":"success"}') {
+          // Log a success message when the attempt is saved
+          console.log("Quiz attempt successfully saved!");
+
+          // Now, let's call the additional API to get retake_quiz and timeleft
+          checkQuizStatus();
+        }
+      })
+      .catch((error) => {
+        console.log("error", error); // Handle error - you may want to display an error message or retry logic
+        submitButton.textContent = "Submit";
+      });
+
+    // Function to check quiz status after a successful attempt
+    function checkQuizStatus() {
+      const checkQuizUrl = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${quizAttemptData.ip_address}&email=${quizAttemptData.email}&course_id=${quizAttemptData.course_id}`;
+
+      fetch(checkQuizUrl, { method: "GET", redirect: "follow" })
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+
+          // Check if the API response has retake_quiz and timeleft
+          if (result.retake_quiz === false && result.timeleft) {
+            console.log("User should wait", result.timeleft);
+
+            // Append timeleft to the score page URL
+            const currentUrl = window.location.href;
+            const separator = currentUrl.includes("?") ? "&" : "?";
+            const newUrl = `${currentUrl}${separator}timeleft=${result.timeleft}`;
+
+            // Navigate to the scores page with the updated URL
+            window.location.href = "/score.html";
+          } else {
+            // Navigate to the scores page with the updated URL
+            window.location.href = "/score.html";
+          }
+        })
+        .catch((error) => {
+          console.log("Error checking quiz status:", error);
+          // Handle error for the quiz status API call
+        });
+    }
+  }
+
   // Function to create and append button to go back to the score page
   function createBackToScoreButton() {
     // Check if the view_result parameter is present in the URL
@@ -305,4 +311,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
+
+  // Create and append button to go back to the score page
+  createBackToScoreButton();
 });
