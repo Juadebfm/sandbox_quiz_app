@@ -56,9 +56,7 @@
 }
 
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+ 
   font-family: var(--font-gilroy-regular);
   -webkit-font-smoothing: antialiased;
 }
@@ -77,9 +75,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-smooth: always;
   text-rendering: optimizeLegibility;
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden !important;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  padding-right: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;flex-direction: column;
 }
 
 .btn_div {
@@ -104,41 +108,42 @@ body {
 }
 
 /* // pages  */
-.home main,
-.quiz main {
-  padding: 2.5rem 0px;
-  width: 60%;
+.home {
+  width: 100%;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin: 0 auto;
+  margin: auto;
+  padding: 0px 3rem;
 }
 
-.home main > h1 {
+.home .error_message {
+  margin-bottom: 40px;
+  width: 50%;
+}
+
+.home > h1 {
   font-size: 37px;
   font-family: var(--font-gilroy-bold);
   color: var(--pc-blue);
   margin-bottom: 30px;
 }
 
-.home main > form {
-  width: 100%;
-  padding: 25px 75px;
+.home > form {
+ width: 50%;
 }
 
-.home main > form > div {
+.home > form > div {
   display: flex;
   align-items: start;
   justify-content: center;
   flex-direction: column;
   margin-bottom: 25px;
+  width: 100%;
 }
 
-.home main > form > div input {
-  width: 100%;
+.home > form > div input {
+  width: 96%;
   height: 48px;
+  margin: auto;
   margin-top: 12px;
   border: 1px solid var(--pc-light-gray);
   border-radius: 8px;
@@ -146,12 +151,12 @@ body {
   font-size: inherit;
 }
 
-.home main > form > div > input:focus {
+.home > form > div > input:focus {
   border: 1px solid var(--pc-orange) !important;
   outline: none !important;
 }
 
-.home main > form > div > select {
+.home > form > div > select {
   width: 100%;
   height: 48px;
   margin-top: 12px;
@@ -161,8 +166,8 @@ body {
   outline: none !important;
 }
 
-.home main > form > div > select:active,
-.home main > form > div > select:focus {
+.home > form > div > select:active,
+.home > form > div > select:focus {
   border: 1px solid var(--pc-orange) !important;
   outline: none !important;
 }
@@ -177,44 +182,45 @@ body {
 /* // quiz */
 .quiz {
   width: 100%;
-  height: max-content;
-  padding: 2.5rem 0px;
+  height: 100vh;
+  margin: auto;
+  padding: 0px 3rem;
   position: relative;
 }
-.quiz main {
+.quiz {
   align-items: start;
   width: 70%;
 }
 
-.quiz main h1 {
+.quiz h1 {
   color: var(--pc-blue);
   font-size: 40px;
   font-family: var(--font-gilroy-bold);
 }
 
-.quiz main p {
+.quiz p {
   color: var(--pc-blue);
   font-size: 25px;
   font-family: var(--font-gilroy-bold);
   text-transform: capitalize;
 }
 
-.quiz main .question_container {
+.quiz .question_container {
   margin-top: 10px;
   margin-bottom: 30px;
 }
 
-.quiz main .radio {
+.quiz .radio {
   margin-right: 4px;
 }
 
-.quiz main .question_title {
+.quiz .question_title {
   font-size: 18px;
   text-transform: capitalize;
   margin-top: 25px;
 }
 
-.quiz main .questions {
+.quiz .questions {
   display: flex;
   align-items: start;
   justify-content: center;
@@ -225,7 +231,7 @@ body {
   margin-top: 5px;
 }
 
-.quiz main .options {
+.quiz .options {
   margin-bottom: 7px;
   cursor: pointer !important;
 }
@@ -371,7 +377,7 @@ body {
 }
 
 @media (max-width: 700px) {
-  .home main > h1 {
+  .home > h1 {
     padding: 0 25px;
     text-align: center;
     font-size: 35px;
@@ -379,12 +385,12 @@ body {
   body {
     height: max-content;
   }
-  .home main {
+  .home {
     width: 100%;
     height: max-content;
     margin: 50px auto;
   }
-  .home main > form {
+  .home > form {
     width: 100%;
     padding: 1.5rem;
   }
@@ -435,7 +441,7 @@ body {
     display: block;
     text-align: center;
   }
-  .quiz main {
+  .quiz {
     width: 100%;
     padding: 25px;
   }
@@ -443,12 +449,12 @@ body {
     flex-direction: column;
   }
 
-  .quiz main p {
+  .quiz p {
     font-size: 18px;
     margin-bottom: 15px;
   }
 
-  .quiz main h1 {
+  .quiz h1 {
     width: 100%;
     font-size: 40px;
     text-align: center;
