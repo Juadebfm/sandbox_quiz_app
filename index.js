@@ -1,20 +1,30 @@
 document.addEventListener("DOMContentLoaded", async function () {
+  console.log("checki");
   const form = document.querySelector("form");
   const errorMessageDiv = document.querySelector(".error_message");
   const submitButton = document.querySelector(".btn_custom");
 
-  const courseSelect = document.querySelector("select");
+  const courseSelect = document.getElementById("select");
+
+  const requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+  };
 
   // Fetch options from the API
-  fetch("https://backend.pluralcode.institute/course-list")
+  console.log("Before fetch");
+
+  fetch("https://backend.pluralcode.institute/course-list", requestOptions)
     .then((response) => {
+      console.log("Inside fetch then block");
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
       return response.json();
     })
     .then((data) => {
-      console.log(data);
+      console.log("Inside fetch success then block", data);
 
       if (data.diplomacourses && Array.isArray(data.diplomacourses)) {
         data.diplomacourses.forEach((course) => {
@@ -24,11 +34,15 @@ document.addEventListener("DOMContentLoaded", async function () {
           courseSelect.appendChild(option);
         });
       } else {
+        console.log("After fetch - Invalid data format. 'diplomacourses' array not found.");
         console.error("Invalid data format. 'diplomacourses' array not found.");
       }
     })
     .catch((error) => {
       console.error("Error fetching courses:", error.message);
+      console.error("Error fetching courses - Full error:", error);
+      // Display error message to the user
+      errorMessageDiv.textContent = "There was an error loading this page. Please try again later.";
     });
 
   // Validate and submit form
@@ -103,13 +117,33 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Clear the error message if the form is valid
       errorMessageDiv.textContent = "";
 
-      // Make API request to check if the user can retake the quiz
-      const apiEndpoint = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}&course_id=${formData.course_id}`;
+      // Show SweetAlert2 confirmation dialog
+      const swalResult = await Swal.fire({
+        title: '<strong>Information</strong>',
+        text: 'Are you sure you are ready to begin the assessment? You will have exactly 20 minutes to complete the assessment. Ensure you have studied the material, and are in a quiet environment.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Continue',
+        cancelButtonText: 'Cancel',
+      });
 
-      try {
-        const response = await fetch(apiEndpoint);
-        const result = await response.json();
+      if (swalResult.isConfirmed) {
+        // Proceed to the quiz logic
+        proceedToQuiz(formData);
+      } else {
+        // User clicked Cancel, reset submit button text
+        submitButton.textContent = "Proceed To Quiz";
+      }
+    }
+  });
 
+  function proceedToQuiz(formData) {
+    // Make API request to check if the user can retake the quiz
+    const apiEndpoint = `https://backend.pluralcode.institute/student/check-quiz?ip_address=${formData.ip_address}&email=${formData.email}&course_id=${formData.course_id}`;
+
+    fetch(apiEndpoint)
+      .then(response => response.json())
+      .then(result => {
         // Log the API response
         console.log("API Response:", result);
 
@@ -138,11 +172,11 @@ document.addEventListener("DOMContentLoaded", async function () {
           // Handle other cases if needed
           console.log("Unknown response. Do something else...");
         }
-      } catch (error) {
+      })
+      .catch(error => {
         console.error("Error checking quiz:", error.message);
-      }
-    }
-  });
+      });
+  }
 
   function saveFormDataToLocal(formData) {
     // Convert the formData object to a JSON string and save it to local storage
@@ -156,6 +190,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   function resetInput(element) {
     element.style.border = "1px solid var(--pc-light-gray)";
   }
+
   function saveApiResultToLocal(result) {
     localStorage.setItem("apiResult", JSON.stringify(result));
   }

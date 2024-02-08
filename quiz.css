@@ -141,7 +141,6 @@ body {
 }
 
 .home > form > div input {
-  width: 96%;
   height: 48px;
   margin: auto;
   margin-top: 12px;
@@ -157,13 +156,13 @@ body {
 }
 
 .home > form > div > select {
-  width: 100%;
-  height: 48px;
+width: 100%;  height: 48px;
   margin-top: 12px;
   border: 1px solid var(--pc-light-gray);
   border-radius: 8px;
   padding: 0 18px;
   outline: none !important;
+  font-family: var(--font-gilroy-regular);
 }
 
 .home > form > div > select:active,

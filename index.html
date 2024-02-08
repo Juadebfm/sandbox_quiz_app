@@ -4,34 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PluralCode Sandbox Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="./quiz.css" />
+    <script src="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js
+    "></script>    <link href="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.min.css
+    " rel="stylesheet">
   </head>
   <body class="home">
-    
+    <!-- <div id="result-container"></div> -->
+
       <h1>Fill The Form To Start</h1>
       <div class="error_message"></div>
       <form action="">
         <div>
-          <label for="name">Full Name</label>
-          <input name="name" type="text" placeholder="Enter Full Name" />
+          <label class="form-label" for="name">Full Name</label>
+          <input class="form-control" name="name" type="text" placeholder="Enter Full Name" />
         </div>
         <div>
-          <label for="email">Email</label>
-          <input name="email" type="email" placeholder="Enter Email" />
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" name="email" type="email" placeholder="Enter Email" />
         </div>
         <div>
-          <label for="phone_number">Phone</label>
-          <input
+          <label class="form-label" for="phone_number">Phone</label>
+          <input class="form-control"
             name="phone_number"
             type="tel"
             placeholder="Enter Phone Number"
           />
         </div>
         <div>
-          <label for="course_id">Course Of Interest</label>
+          <label class="form-label" for="course_id">Course Of Interest</label>
           <select
             name="course_id"
-            id=""
+            id="select"
             class="form-select"
             aria-label="Courses Selection"
           >
@@ -42,7 +49,7 @@
           <button class="btn_custom">Proceed To Quiz</button>
         </div>
       </form>
-
+      
     <script src="./index.js"></script>
   </body>
 </html>
