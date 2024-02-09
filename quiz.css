@@ -92,13 +92,14 @@ body {
   justify-content: center;
 }
 .btn_custom {
+  display: flex;align-items: center;justify-content: center;
   font-family: var(--font-gilroy-regular);
   background-color: var(--pc-orange);
   border: none;
   outline: none;
   font-size: var(--big-text);
   color: var(--pc-white-white);
-  width: 50%;
+  width: 100%;
   margin: auto;
   margin-top: 25px;
   padding: 5px 18px;
@@ -112,7 +113,7 @@ body {
   width: 100%;
   height: 100vh;
   margin: auto;
-  padding: 0px 3rem;
+  padding: 3rem;
 }
 
 .home .error_message {
@@ -181,9 +182,9 @@ width: 100%;  height: 48px;
 /* // quiz */
 .quiz {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   margin: auto;
-  padding: 0px 3rem;
+  padding: 3rem;
   position: relative;
 }
 .quiz {
@@ -255,7 +256,7 @@ width: 100%;  height: 48px;
 
 /* // Score */
 .score {
-  padding: 4rem 2.8rem;
+  padding: 4rem 10rem;
   width: 100%;
   height: max-content;
   display: flex;
@@ -375,8 +376,24 @@ width: 100%;  height: 48px;
   display: none;
 }
 
+.countDownElement{
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--pc-blue);
+  font-family: var(--font-gilroy-medium);
+}
+
+.grade_recieved {
+  font-family: var(--font-gilroy-medium);
+  font-size: 18px;
+}
+
+.topass {
+font-family: var(--font-gilroy-italic);}
+
 @media (max-width: 700px) {
   .home > h1 {
+    margin-top: 4rem;
     padding: 0 25px;
     text-align: center;
     font-size: 35px;
@@ -442,7 +459,7 @@ width: 100%;  height: 48px;
   }
   .quiz {
     width: 100%;
-    padding: 25px;
+    padding:3rem 25px;
   }
   .back_button_div {
     flex-direction: column;
@@ -462,4 +479,24 @@ width: 100%;  height: 48px;
   .quiz .submit_button {
     width: 80%;
   }
+
+  .countDownElement{
+    text-align: center;
+  }
+
+  .home {
+    padding: 0px 25px;
+}
+}
+
+
+@media (min-width: 701px) and (max-width: 1112px){
+  .quiz {
+    align-items: start;
+    width: 90%;
+}
+.score {
+  padding: 4rem 2rem;
+  width: 100%;
+}
 }

@@ -124,7 +124,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Continue',
+        confirmButtonColor:"#222057",
         cancelButtonText: 'Cancel',
+        cancelButtonColor: '#ff000',
       });
 
       if (swalResult.isConfirmed) {
@@ -156,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           console.log("User should wait. Redirecting to score.html");
           if (result.timeleft !== null) {
             // Only add timeleft to the URL if it is not null
-            window.location.href = `score.html?timeleft=${result.timeleft}`;
+            window.location.href = `score.html`;
           } else {
             window.location.href = "score.html";
           }

@@ -1,10 +1,42 @@
 document.addEventListener("DOMContentLoaded", function () {
   let data; // Declare a variable to store the data globally
+  let countdownInterval; // Variable to store the countdown interval ID
+  let timeLeft = 120; // Set the countdown time in seconds (30 seconds for testing)
 
   // Get course_id from local storage
   const formDataString = localStorage.getItem("formData");
   const formData = JSON.parse(formDataString);
   const course_id = formData.course_id;
+
+  // Reference to the countdown timer elements
+  const countdownElement = document.getElementById("countdown");
+  countdownElement.style.display="none"
+  const minutesElement = document.getElementById("minutes");
+  const secondsElement = document.getElementById("seconds");
+
+  // Update the countdown timer display
+  function updateCountdownDisplay() {
+    countdownElement.style.display="block"
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    minutesElement.textContent = minutes.toString().padStart(2, "0");
+    secondsElement.textContent = seconds.toString().padStart(2, "0");
+  }
+
+  // Function to start the countdown timer
+  function startCountdown() {
+    countdownInterval = setInterval(function () {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateCountdownDisplay();
+      } else {
+        // Countdown has ended, stop the interval
+        clearInterval(countdownInterval);
+        // Calculate user's score and save the quiz attempt
+        calculateAndSaveQuizAttempt();
+      }
+    }, 1000); // Update every 1 second
+  }
 
   // Reference to the loading message container
   const loadingContainer = document.querySelector(".quiz_container");
@@ -20,6 +52,16 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(responseData);
       data = responseData; // Store the data globally
       renderQuiz(data.message.questions);
+      // Check if view_result=true is present in the URL
+      const isViewResult = isViewResultMode();
+
+      // Disable countdown and hide submit button if view_result=true
+      if (isViewResult) {
+        disableCountdown();
+        hideSubmitButton();
+      } else {
+        startCountdown(); // Start the countdown when the quiz data is loaded
+      }
     })
     .catch((error) => {
       console.error("Error fetching quiz:", error);
@@ -314,4 +356,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Create and append button to go back to the score page
   createBackToScoreButton();
+
+  // Function to calculate user's score and save the quiz attempt
+  function calculateAndSaveQuizAttempt() {
+    // Stop the countdown interval (if not already stopped)
+    clearInterval(countdownInterval);
+
+    // Calculate user's score
+    const userScore = calculateUserScore(data.message.questions);
+
+    // Save quiz attempt data to local storage
+    saveQuizAttempt(formData, data.message.questions, userScore);
+
+    // Save quiz attempt data to API
+    saveQuizAttemptToAPI(formData, data.message.questions, userScore);
+  }
+
+  // Function to disable the countdown
+  function disableCountdown() {
+    clearInterval(countdownInterval);
+  }
+
+  // Function to hide the submit button
+  function hideSubmitButton() {
+    const submitButton = document.querySelector(".submit_button");
+    if (submitButton) {
+      submitButton.style.display = "none";
+    }
+  }
 });
